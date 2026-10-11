@@ -3,426 +3,2085 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Closet | Curated Outfits</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Closet & Style Hub</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-          borderRadius: { '4xl': '2rem', '5xl': '2.5rem' }
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          borderRadius: {
+            '3xl': '24px',
+            '4xl': '32px',
+            '5xl': '40px',
+          },
+          boxShadow: {
+            'card': '0 8px 24px -4px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03)',
+            'card-hover': '0 16px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
+            'pill': '0 2px 8px rgba(0, 0, 0, 0.07)',
+            'float': '0 20px 45px -10px rgba(0, 0, 0, 0.25)',
+          }
         }
       }
     }
   </script>
+
   <style>
     :root {
       --bg-color: #d7e8cb;
+      --text-color: #111827;
+      --subtext-color: #4b5563;
       --card-bg: #ffffff;
-      --text-main: #14171a;
-      --text-muted: #657786;
-      --pill-bg: #c5dcba;
+      --card-border: rgba(255, 255, 255, 0.85);
+      --bg-blur: 0px;
+      --bg-overlay-opacity: 0.12;
+      --bg-image: none;
     }
+
     body {
       background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-color);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       min-height: 100vh;
-      transition: background 0.3s ease;
+      margin: 0;
+      padding: 0;
       -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.3s ease;
+      position: relative;
+      overflow-x: hidden;
     }
-    .editable-focus {
-      outline: 2px dashed rgba(34, 197, 94, 0.7);
+
+    /* Fixed full-screen wallpaper layer */
+    #theme-background-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg-color);
+      background-image: var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(var(--bg-blur));
+      transform: scale(1.05);
+      z-index: -2;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    #theme-overlay-layer {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      opacity: var(--bg-overlay-opacity);
+      z-index: -1;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Editable box when in Admin mode */
+    body.is-admin .editable-box {
+      outline: 1.5px dashed rgba(16, 185, 129, 0.7);
       outline-offset: 3px;
-      border-radius: 6px;
+      border-radius: 8px;
+      cursor: text;
     }
-    .card-shadow {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    body.is-admin .editable-box:hover {
+      outline-color: #10b981;
+      background-color: rgba(255, 255, 255, 0.3);
     }
-    .dock-shadow {
-      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 0, 0, 0.05);
+    body.is-admin .editable-box:focus {
+      outline: 2px solid #059669;
+      background-color: rgba(255, 255, 255, 0.6);
     }
-    .target-highlight {
-      animation: pulseHighlight 2.5s ease-out;
+
+    /* Admin UI Visibility Controls */
+    .admin-only-flex {
+      display: none !important;
     }
-    @keyframes pulseHighlight {
-      0% { transform: scale(1.02); box-shadow: 0 0 0 4px #16a34a; }
-      70% { transform: scale(1.01); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.4); }
-      100% { transform: scale(1); box-shadow: none; }
+    body.is-admin .admin-only-flex {
+      display: flex !important;
+    }
+
+    .admin-only-block {
+      display: none !important;
+    }
+    body.is-admin .admin-only-block {
+      display: block !important;
+    }
+
+    /* Product Cutout Shadow & Float */
+    .product-cutout {
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .folder-card:hover .product-cutout {
+      transform: translateY(-4px) scale(1.03);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
-<body class="p-4 sm:p-6 pb-28 relative flex flex-col items-center">
+<body class="flex flex-col items-center min-h-screen px-4 pt-8 pb-32">
 
-  <div id="custom-bg-layer" class="fixed inset-0 pointer-events-none z-0 bg-cover bg-center transition-opacity duration-300 opacity-0"></div>
+  <!-- Background Wallpaper and Tint Layers -->
+  <div id="theme-background-layer"></div>
+  <div id="theme-overlay-layer"></div>
 
-  <main class="w-full max-w-[440px] mx-auto relative z-10 flex flex-col items-center">
-
-    <!-- Profile Header -->
-    <header class="w-full flex flex-col items-center text-center mt-3 mb-6 relative">
-      <div class="relative group">
-        <img id="avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
-             alt="Profile" 
-             class="w-24 h-24 rounded-full object-cover shadow-sm border-2 border-white/60 cursor-pointer select-none">
-        <button id="btn-change-avatar" class="hidden absolute bottom-0 right-0 bg-black text-white p-2 rounded-full shadow-md text-xs hover:bg-neutral-800" title="Change Photo">
-          📷
-        </button>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 z-50 transform -translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-[90%] mx-auto">
+    <div id="toast-body" class="bg-neutral-900/95 text-white backdrop-blur-xl px-4 py-3 rounded-2xl shadow-float flex items-center gap-3 border border-white/10">
+      <div id="toast-icon-container" class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="check" class="w-4 h-4"></i>
       </div>
+      <p id="toast-text" class="text-xs font-semibold flex-1 leading-snug">Changes saved.</p>
+    </div>
+  </div>
 
-      <h1 id="profile-name" class="text-2xl font-black mt-3 tracking-tight editable-elem" contenteditable="false">RUDRA</h1>
-      <p id="profile-handle" class="text-xs font-semibold text-neutral-600 mt-0.5 editable-elem px-2 py-0.5" contenteditable="false">@by_rudra.rajkumar</p>
-      <p id="profile-bio" class="text-xs text-neutral-700 mt-1 max-w-[320px] editable-elem" contenteditable="false">Outfits and fashion finds from my reels. Tap to shop!</p>
+  <!-- Mobile Screen Frame Constraint -->
+  <main class="w-full max-w-[425px] mx-auto flex flex-col items-center relative z-10">
 
-      <nav class="flex items-center p-1 rounded-full mt-5 card-shadow" style="background-color: var(--pill-bg);" aria-label="Sections">
-        <button id="tab-links" class="px-7 py-2 rounded-full text-xs font-bold transition-all text-neutral-600 hover:text-neutral-900">Links</button>
-        <button id="tab-shop" class="px-7 py-2 rounded-full text-xs font-bold transition-all bg-white text-neutral-900 shadow-sm">Shop</button>
-      </nav>
-    </header>
-
-    <!-- Views -->
-    <div class="w-full">
-
-      <!-- Links View -->
-      <section id="view-links" class="w-full hidden space-y-3">
-        <div id="links-container" class="space-y-3 w-full"></div>
-        <button id="btn-add-link" class="hidden w-full py-3.5 rounded-3xl border-2 border-dashed border-neutral-400 font-bold text-xs text-neutral-700 hover:bg-white/40">
-          + Add New Bio Link
-        </button>
-      </section>
-
-      <!-- Shop Main View (Folders) -->
-      <section id="view-shop-folders" class="w-full space-y-4">
-        <div id="folders-container" class="space-y-4 w-full"></div>
-      </section>
-
-      <!-- Shop Subpage View (Inside Folder) -->
-      <section id="view-folder-detail" class="w-full hidden">
-        <div class="w-full flex items-center justify-between mb-4 px-1">
-          <button id="btn-back-folders" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/80 hover:bg-white text-xs font-bold shadow-sm transition">
-            ← <span>Back to All Collections</span>
-          </button>
-          <div class="flex items-center gap-2">
-            <button id="btn-copy-current-folder" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white text-xs font-semibold shadow-sm transition" title="Copy link to this collection">
-              🔗 <span>Share Folder</span>
-            </button>
-            <span id="detail-folder-count" class="text-[11px] font-bold uppercase tracking-wider text-neutral-600">4 Products</span>
-          </div>
-        </div>
-
-        <div class="w-full bg-white/70 backdrop-blur-md rounded-3xl p-4 shadow-sm mb-5 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="text-xl">📁</span>
-            <h2 id="detail-folder-title" class="text-base font-extrabold truncate editable-elem" contenteditable="false">Collection Name</h2>
-          </div>
-        </div>
-
-        <div id="folder-products-grid" class="grid grid-cols-2 gap-3.5 w-full"></div>
-
-        <button id="btn-add-product" class="hidden w-full mt-4 py-3.5 rounded-3xl border-2 border-dashed border-neutral-400 font-bold text-xs text-neutral-700 hover:bg-white/40">
-          + Add Item to this Collection
-        </button>
-      </section>
-
+    <!-- Avatar with Hidden Triple-Tap Trigger -->
+    <div class="relative mb-3 group select-none">
+      <div id="avatar-tap-target" 
+           title="Tap 3 times to unlock Admin mode"
+           class="w-24 h-24 rounded-full overflow-hidden shadow-card border-[3px] border-white/80 bg-neutral-200 relative cursor-pointer active:scale-95 transition-transform">
+        <img id="profile-img"
+             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" 
+             alt="Profile Avatar" 
+             class="w-full h-full object-cover">
+      </div>
+      <!-- Profile photo uploader trigger (visible only in admin mode) -->
+      <label for="profile-avatar-input" 
+             title="Upload profile photo" 
+             class="admin-only-flex absolute bottom-0 right-0 bg-neutral-900 text-white p-2 rounded-full cursor-pointer shadow-md hover:scale-105 active:scale-95 transition">
+        <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+      </label>
+      <input type="file" id="profile-avatar-input" accept="image/*" class="hidden">
     </div>
 
-    <!-- Disclosure -->
-    <footer class="mt-12 text-center text-[10px] text-neutral-500 max-w-[320px] leading-relaxed">
-      <p id="affiliate-disclosure" class="editable-elem" contenteditable="false">As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you.</p>
+    <!-- Display Name & Handle -->
+    <div class="text-center mb-5 w-full px-2">
+      <h1 id="profile-name" class="editable-box text-[26px] font-extrabold tracking-tight inline-block px-2.5 py-0.5 rounded-lg" contenteditable="false">
+        Isabelle
+      </h1>
+      <p id="profile-handle" class="editable-box text-xs font-semibold text-neutral-600 tracking-wide mt-0.5 inline-block px-2" contenteditable="false">
+        @isabelle.closet
+      </p>
+    </div>
+
+    <!-- Segmented Tab Pill Selector (Links / Shop) -->
+    <div class="w-auto mb-6">
+      <div id="pill-bar-container" class="bg-black/10 backdrop-blur-sm p-1.5 rounded-full flex items-center gap-1 shadow-inner">
+        <button id="tab-links-btn" class="px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200">
+          Links
+        </button>
+        <button id="tab-shop-btn" class="px-7 py-2 rounded-full text-sm font-bold shadow-pill transition-all duration-200">
+          Shop
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Dynamic Content Container -->
+    <div id="content-outlet" class="w-full flex flex-col gap-4">
+      <!-- Injected dynamically via JavaScript -->
+    </div>
+
+    <!-- Clean Affiliate Disclaimer Footer (Zero Linktree Branding) -->
+    <footer class="mt-12 text-center px-4 w-full">
+      <p id="affiliate-disclaimer" class="editable-box text-[11px] text-neutral-600 font-medium inline-block leading-relaxed" contenteditable="false">
+        As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you.
+      </p>
     </footer>
 
   </main>
 
-  <!-- Admin Bar -->
-  <div id="admin-bar" class="hidden fixed bottom-4 inset-x-4 max-w-[460px] mx-auto bg-white/95 backdrop-blur-md rounded-3xl dock-shadow p-3 z-50 border border-neutral-200">
-    <div class="flex items-center justify-between pb-2 mb-2 border-b border-neutral-100 text-[11px] font-bold text-neutral-700">
-      <span class="flex items-center gap-1.5 text-green-700">
-        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-        ADMIN ACTIVE
-      </span>
-      <div class="flex items-center gap-1.5">
-        <button id="btn-dock-publish" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-full shadow-sm flex items-center gap-1 transition">
-          ☁️ <span id="publish-text">Publish Live</span>
+  <!-- Admin Floating Dock (Hidden by default, shown ONLY after unlocking with PIN) -->
+  <div id="admin-dock" class="fixed bottom-4 inset-x-0 mx-auto max-w-[430px] px-3 z-40 hidden">
+    <div class="bg-white/95 backdrop-blur-xl border border-neutral-200/90 shadow-float rounded-3xl p-3 flex flex-col gap-2 transition">
+      <div class="flex items-center justify-between px-2 pt-0.5">
+        <span class="text-[11px] font-bold tracking-wider uppercase text-emerald-800 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Admin Active
+        </span>
+        <div class="flex items-center gap-2">
+          <button id="btn-dock-publish" class="text-[11px] font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded-full transition flex items-center gap-1.5 shadow-sm active:scale-95">
+            <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+            <span id="btn-publish-label">Publish Live</span>
+          </button>
+          <button id="btn-lock-exit" class="text-[11px] font-bold text-neutral-500 hover:text-red-600 bg-neutral-100 hover:bg-red-50 px-2.5 py-1 rounded-full transition flex items-center gap-1">
+            <i data-lucide="lock" class="w-3 h-3"></i>
+            <span>Lock</span>
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-6 gap-1 pt-1">
+        <button id="btn-dock-folder" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+          <span>+ Folder</span>
         </button>
-        <button id="btn-dock-lock" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-2.5 py-1 rounded-full transition">
-          🔒 Lock
+        <button id="btn-dock-product" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+          <span>+ Product</span>
+        </button>
+        <button id="btn-dock-theme" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="palette" class="w-3.5 h-3.5 text-indigo-600"></i>
+          <span>Theme</span>
+        </button>
+        <button id="btn-dock-sync" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="github" class="w-3.5 h-3.5 text-neutral-800"></i>
+          <span>GitHub</span>
+        </button>
+        <button id="btn-dock-pin" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>PIN</span>
+        </button>
+        <button id="btn-dock-download" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-700"></i>
+          <span>Export</span>
         </button>
       </div>
     </div>
-    
-    <div class="grid grid-cols-6 gap-1.5 text-[10px] font-bold text-neutral-700 text-center">
-      <button id="btn-dock-folder" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        📁<span>+ Folder</span>
-      </button>
-      <button id="btn-dock-product" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        🏷️<span>+ Item</span>
-      </button>
-      <button id="btn-dock-theme" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        🎨<span>Theme</span>
-      </button>
-      <button id="btn-dock-github" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        ⚙️<span>GitHub</span>
-      </button>
-      <button id="btn-dock-pin" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        🔑<span>PIN</span>
-      </button>
-      <button id="btn-dock-export" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
-        💾<span>Export</span>
+  </div>
+
+  <!-- Secret PIN Verification Modal -->
+  <div id="pin-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-4xl p-6 shadow-float flex flex-col items-center text-center gap-4 fade-in">
+      <div class="w-12 h-12 bg-neutral-100 text-neutral-900 rounded-2xl flex items-center justify-center shadow-inner">
+        <i data-lucide="lock" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-neutral-900 text-base">Storefront Admin Lock</h3>
+        <p class="text-xs text-neutral-500 mt-1">Enter your 4-digit security PIN to unlock editing mode.</p>
+      </div>
+      <div class="w-full">
+        <input type="password" id="pin-input" maxlength="8" inputmode="numeric" 
+               class="w-full text-center tracking-[0.3em] font-mono text-xl py-3 px-4 border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-neutral-900 transition" 
+               placeholder="••••">
+        <p id="pin-error-msg" class="text-[11px] font-bold text-red-600 mt-2 hidden">Incorrect PIN. Try again.</p>
+        <p class="text-[10px] text-neutral-400 mt-2 font-mono">Default PIN: 1234</p>
+      </div>
+      <div class="flex gap-2 w-full pt-1">
+        <button id="btn-pin-cancel" class="flex-1 py-3 text-xs font-bold text-neutral-600 hover:bg-neutral-100 rounded-2xl transition">
+          Cancel
+        </button>
+        <button id="btn-pin-submit" class="flex-1 py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
+          Unlock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitHub Settings Modal -->
+  <div id="github-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in max-h-[90vh] overflow-y-auto no-scrollbar">
+      <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-neutral-900 text-white rounded-xl">
+            <i data-lucide="github" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-neutral-900 text-sm">GitHub Sync Settings</h3>
+            <span class="text-[10px] text-neutral-500">100% Free 1-Click Publishing</span>
+          </div>
+        </div>
+        <button id="btn-close-gh-modal" class="text-neutral-400 hover:text-neutral-700 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="text-[11px] text-neutral-600 bg-neutral-50 p-3 rounded-2xl border border-neutral-200/80 leading-relaxed">
+        Save your GitHub details once. Your Personal Access Token (PAT) stays encrypted inside your browser's private local storage.
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        <div>
+          <label class="text-[11px] font-bold text-neutral-700 block mb-1">GitHub Username</label>
+          <input type="text" id="gh-owner" placeholder="e.g. rudrarajkumar" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-neutral-700 block mb-1">Repository Name</label>
+          <input type="text" id="gh-repo" placeholder="e.g. closet" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[11px] font-bold text-neutral-700 block mb-1">Branch</label>
+            <input type="text" id="gh-branch" value="main" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
+          </div>
+          <div>
+            <label class="text-[11px] font-bold text-neutral-700 block mb-1">File Path</label>
+            <input type="text" id="gh-path" value="index.html" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold text-neutral-700 block mb-1">Personal Access Token (PAT)</label>
+          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900">
+          <p class="text-[10px] text-neutral-400 mt-1">Requires classic token with <span class="font-bold text-neutral-700">repo</span> permission checked.</p>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button id="btn-save-gh-settings" class="w-full py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change PIN Modal -->
+  <div id="change-pin-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-neutral-900 text-base flex items-center gap-1.5">
+          <i data-lucide="key-round" class="w-4 h-4 text-amber-600"></i>
+          Change Admin PIN
+        </h3>
+        <button id="btn-close-changepin" class="text-neutral-400 hover:text-neutral-700 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-neutral-600 block mb-1">New 4-digit PIN:</label>
+        <input type="password" id="new-pin-input" maxlength="8" inputmode="numeric" class="w-full text-center tracking-[0.3em] font-mono text-lg py-2.5 px-4 border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-neutral-900" placeholder="••••">
+      </div>
+      <button id="btn-save-new-pin" class="w-full py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
+        Update PIN
       </button>
     </div>
   </div>
 
-  <input type="file" id="generic-file-input" accept="image/*" class="hidden">
-
-  <!-- Theme Modal -->
-  <dialog id="theme-modal" class="rounded-3xl p-5 max-w-[380px] w-full backdrop:bg-black/40 card-shadow border-0">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="font-extrabold text-sm">Customize Theme</h3>
-      <button onclick="document.getElementById('theme-modal').close()" class="text-neutral-400 hover:text-black font-bold">✕</button>
+  <!-- General URL / Text Edit Modal -->
+  <div id="general-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in">
+      <div class="flex items-center justify-between">
+        <h3 id="modal-heading" class="font-extrabold text-neutral-900 text-base">Edit Details</h3>
+        <button id="modal-btn-close" class="text-neutral-400 hover:text-neutral-700 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label id="modal-label" class="text-xs font-semibold text-neutral-600">Destination URL:</label>
+        <input type="text" id="modal-input" class="w-full px-4 py-3 text-sm border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-700 font-sans" placeholder="https://...">
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="modal-btn-cancel" class="px-4 py-2.5 text-xs font-bold text-neutral-600 hover:bg-neutral-100 rounded-2xl transition">
+          Cancel
+        </button>
+        <button id="modal-btn-submit" class="px-5 py-2.5 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
+          Save Changes
+        </button>
+      </div>
     </div>
-    <div class="space-y-4 text-xs">
+  </div>
+
+  <!-- Theme Drawer Modal -->
+  <div id="theme-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-t-[36px] sm:rounded-4xl p-6 shadow-float flex flex-col gap-5 fade-in">
+      <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
+            <i data-lucide="palette" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-extrabold text-neutral-900 text-base">Customize Storefront Theme</h3>
+        </div>
+        <button id="theme-modal-close" class="text-neutral-400 hover:text-neutral-700 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Presets -->
       <div>
-        <label class="font-bold text-neutral-600 block mb-2">Preset Colors</label>
-        <div class="grid grid-cols-4 gap-2 text-[11px] text-center font-semibold">
-          <button onclick="setThemePreset('#d7e8cb', '#c5dcba')" class="p-2 rounded-xl border" style="background:#d7e8cb;">Sage</button>
-          <button onclick="setThemePreset('#e8dcf7', '#dac7f3')" class="p-2 rounded-xl border" style="background:#e8dcf7;">Lavender</button>
-          <button onclick="setThemePreset('#f4efe6', '#e5dcce')" class="p-2 rounded-xl border" style="background:#f4efe6;">Oat</button>
-          <button onclick="setThemePreset('#fed7aa', '#fdba74')" class="p-2 rounded-xl border" style="background:#fed7aa;">Peach</button>
+        <label class="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2.5 block">Preset Palettes</label>
+        <div class="grid grid-cols-2 gap-2" id="preset-themes-grid"></div>
+      </div>
+
+      <!-- Custom Solid Color -->
+      <div class="bg-neutral-50 p-4 rounded-3xl border border-neutral-200/80">
+        <label class="text-xs font-bold text-neutral-800 mb-2 block flex items-center justify-between">
+          <span>Custom Solid Color</span>
+          <span id="custom-hex-label" class="text-[11px] font-mono text-neutral-500">#d7e8cb</span>
+        </label>
+        <div class="flex items-center gap-3">
+          <input type="color" id="theme-color-picker" class="w-12 h-10 rounded-xl border-none cursor-pointer bg-transparent">
+          <span class="text-xs text-neutral-500">Pick any custom shade instantly</span>
         </div>
       </div>
-    </div>
-  </dialog>
 
-  <!-- GitHub Modal -->
-  <dialog id="github-modal" class="rounded-3xl p-5 max-w-[380px] w-full backdrop:bg-black/40 card-shadow border-0">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="font-extrabold text-sm">GitHub 1-Click Sync</h3>
-      <button onclick="document.getElementById('github-modal').close()" class="text-neutral-400 hover:text-black font-bold">✕</button>
-    </div>
-    <form id="github-form" class="space-y-2.5 text-xs">
-      <div>
-        <label class="font-bold text-neutral-600 block mb-0.5">GitHub Username</label>
-        <input id="gh-user" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" placeholder="rudrarajkumar" required>
-      </div>
-      <div>
-        <label class="font-bold text-neutral-600 block mb-0.5">Repository Name</label>
-        <input id="gh-repo" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" placeholder="closet" required>
-      </div>
-      <div>
-        <label class="font-bold text-neutral-600 block mb-0.5">Branch</label>
-        <input id="gh-branch" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" value="main" required>
-      </div>
-      <div>
-        <label class="font-bold text-neutral-600 block mb-0.5">File Path</label>
-        <input id="gh-path" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" value="index.html" required>
-      </div>
-      <div>
-        <label class="font-bold text-neutral-600 block mb-0.5">Personal Access Token (classic)</label>
-        <input id="gh-token" type="password" class="w-full p-2.5 rounded-xl border bg-neutral-50 font-mono text-[11px]" placeholder="ghp_..." required>
-      </div>
-      <button type="submit" class="w-full py-2.5 bg-black text-white font-bold rounded-xl mt-2 hover:bg-neutral-800">
-        Save GitHub Settings
-      </button>
-    </form>
-  </dialog>
+      <!-- Custom Wallpaper Upload -->
+      <div class="bg-neutral-50 p-4 rounded-3xl border border-neutral-200/80 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-neutral-800 block">Upload Gallery Photo</span>
+            <span class="text-[11px] text-neutral-500">Custom wallpaper from camera roll</span>
+          </div>
+          <label class="px-3.5 py-2 bg-neutral-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition">
+            Browse
+            <input type="file" id="theme-bg-file" accept="image/*" class="hidden">
+          </label>
+        </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed top-5 z-50 bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg transition-all transform -translate-y-16 pointer-events-none opacity-0">
-    Link copied!
+        <div id="theme-bg-controls" class="flex flex-col gap-3 pt-2 border-t border-neutral-200/70">
+          <div>
+            <div class="flex justify-between text-[11px] font-bold text-neutral-600 mb-1">
+              <span>Dark Overlay Tint</span>
+              <span id="overlay-val-text">12%</span>
+            </div>
+            <input type="range" id="theme-overlay-slider" min="0" max="80" value="12" class="w-full accent-neutral-900 cursor-pointer">
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] font-bold text-neutral-600 mb-1">
+              <span>Background Blur</span>
+              <span id="blur-val-text">0px</span>
+            </div>
+            <input type="range" id="theme-blur-slider" min="0" max="25" value="0" class="w-full accent-neutral-900 cursor-pointer">
+          </div>
+          <button id="btn-remove-bg-image" class="text-[11px] font-bold text-red-600 hover:text-red-700 self-start">
+            Remove background photo
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-1">
+        <button id="theme-modal-apply" class="w-full py-3 bg-neutral-900 hover:bg-black text-white text-xs font-bold rounded-2xl shadow-sm transition">
+          Done & Apply
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'closet_data_store_v3';
-    const GITHUB_KEY = 'closet_gh_config_v1';
-    const PIN_KEY = 'closet_admin_pin_v1';
+    const PRESET_THEMES = [
+      { id: 'sage', name: 'Sage Green (Default)', bgColor: '#d7e8cb', textColor: '#111827', subtextColor: '#4b5563', isDark: false },
+      { id: 'lavender', name: 'Lavender Dream', bgColor: '#e8dcf7', textColor: '#1f132e', subtextColor: '#57466e', isDark: false },
+      { id: 'cream', name: 'Oat Milk Minimal', bgColor: '#f4efe6', textColor: '#27231f', subtextColor: '#635b54', isDark: false },
+      { id: 'noir', name: 'Midnight Noir', bgColor: '#121316', textColor: '#f9fafb', subtextColor: '#9ca3af', isDark: true },
+      { id: 'peach', name: 'Sunset Peach', bgColor: '#fed7aa', textColor: '#291708', subtextColor: '#6d4c2b', isDark: false },
+      { id: 'rose', name: 'Rose Pink', bgColor: '#fce7f3', textColor: '#371427', subtextColor: '#70425b', isDark: false },
+      { id: 'sky', name: 'Sky Mist', bgColor: '#dbeafe', textColor: '#0f172a', subtextColor: '#475569', isDark: false },
+      { id: 'matcha', name: 'Matcha Forest', bgColor: '#b8d8be', textColor: '#0f2916', subtextColor: '#36533f', isDark: false }
+    ];
 
-    const defaultData = {
-      profile: {
-        name: "RUDRA",
-        handle: "@by_rudra.rajkumar",
-        bio: "Outfits and fashion finds from my reels. Tap to shop!",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-        disclosure: "As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you."
-      },
+    // Master Storefront State
+    let state = {
+      isAdmin: false,
+      adminPin: "1234",
+      activeTab: 'shop', // 'links' or 'shop'
+      currentFolderId: null, // null = overview; string = inside subpage
       theme: {
-        bgColor: "#d7e8cb",
-        pillColor: "#c5dcba",
-        wallpaper: "",
+        presetId: 'sage',
+        bgColor: '#d7e8cb',
+        bgImage: '',
+        overlayOpacity: 0.12,
+        blur: 0,
+        textColor: '#111827',
+        subtextColor: '#4b5563',
         isDark: false
       },
+      profile: {
+        name: "Isabelle",
+        handle: "@isabelle.closet",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+        bio: "Curated fashion staples, capsule wardrobes & daily essentials."
+      },
+      links: [
+        { id: "lnk-1", title: "Follow on Instagram", url: "https://instagram.com" },
+        { id: "lnk-2", title: "TikTok Lookbooks & Fits", url: "https://tiktok.com" },
+        { id: "lnk-3", title: "My YouTube Channel", url: "https://youtube.com" }
+      ],
       folders: [
         {
-          id: "folder-1",
-          title: "Fashion Picks",
-          items: [
+          id: "folder-fall-makeup",
+          title: "Fall Makeup Faves",
+          products: [
             {
-              id: "item-1-0",
-              title: "T-Shirt",
-              price: "$24.99",
-              url: "https://amazon.com",
-              photo: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80"
+              id: "prod-1",
+              title: "Patrick Ta Blush Duo",
+              price: "$38.00",
+              image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
             },
             {
-              id: "item-1-1",
-              title: "Straight Fit Jeans",
-              price: "$48.00",
-              url: "https://amazon.com",
-              photo: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=400&q=80"
+              id: "prod-2",
+              title: "Saie Dew Blush Tint",
+              price: "$25.00",
+              image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
             },
             {
-              id: "item-1-2",
-              title: "Retro Sneakers",
-              price: "$75.00",
-              url: "https://amazon.com",
-              photo: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80"
+              id: "prod-3",
+              title: "Glow Serum Foundation",
+              price: "$42.00",
+              image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
             },
             {
-              id: "item-1-3",
-              title: "Silver Classic Watch",
+              id: "prod-4",
+              title: "Hydrating Lip Oil",
+              price: "$24.00",
+              image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
+            }
+          ]
+        },
+        {
+          id: "folder-cozy-knits",
+          title: "Cozy Sweaters & Knits",
+          products: [
+            {
+              id: "prod-5",
+              title: "Cable Knit Turtleneck",
               price: "$59.00",
-              url: "https://amazon.com",
-              photo: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80"
+              image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
+            },
+            {
+              id: "prod-6",
+              title: "Straight Leg Chino Trousers",
+              price: "$68.00",
+              image: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
+            },
+            {
+              id: "prod-7",
+              title: "Retro Court Sneakers",
+              price: "$89.00",
+              image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
+            },
+            {
+              id: "prod-8",
+              title: "Classic Silver Analog Watch",
+              price: "$110.00",
+              image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
             }
           ]
         }
-      ],
-      links: [
-        { title: "Follow on Instagram", url: "https://instagram.com" },
-        { title: "YouTube Channel", url: "https://youtube.com" }
       ]
     };
 
-    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData;
-    let isAdmin = false;
-    let currentActiveFolderId = null;
-    let fileUploadCallback = null;
-
-    function showToast(text) {
+    // Toast Utility
+    function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
-      toast.innerText = text;
-      toast.classList.remove('-translate-y-16', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
-      setTimeout(() => {
-        toast.classList.add('-translate-y-16', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2000);
-    }
+      const toastText = document.getElementById('toast-text');
+      const toastIcon = document.getElementById('toast-icon-container');
 
-    function copyDeepLink(hash) {
-      const url = `${window.location.origin}${window.location.pathname}${hash}`;
-      navigator.clipboard.writeText(url).then(() => {
-        showToast('Direct Link Copied!');
-      }).catch(() => {
-        prompt('Copy this link:', url);
-      });
-    }
-
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-    }
-
-    function applyTheme() {
-      document.documentElement.style.setProperty('--bg-color', appData.theme.bgColor);
-      document.documentElement.style.setProperty('--pill-bg', appData.theme.pillColor);
-      const bgLayer = document.getElementById('custom-bg-layer');
-      if (appData.theme.wallpaper) {
-        bgLayer.style.backgroundImage = `url(${appData.theme.wallpaper})`;
-        bgLayer.classList.remove('opacity-0');
-        bgLayer.classList.add('opacity-100');
+      toastText.innerText = message;
+      if (isError) {
+        toastIcon.className = "w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0";
+        toastIcon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i>`;
       } else {
-        bgLayer.style.backgroundImage = 'none';
-        bgLayer.classList.add('opacity-0');
+        toastIcon.className = "w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0";
+        toastIcon.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
+      }
+      lucide.createIcons();
+
+      toast.classList.remove('opacity-0', '-translate-y-20', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-20', 'pointer-events-none');
+      }, 3500);
+    }
+
+    // Apply Dynamic Theme Styles
+    function applyThemeStyles() {
+      const root = document.documentElement;
+      root.style.setProperty('--bg-color', state.theme.bgColor);
+      root.style.setProperty('--text-color', state.theme.textColor);
+      root.style.setProperty('--subtext-color', state.theme.subtextColor);
+      root.style.setProperty('--bg-blur', (state.theme.blur || 0) + 'px');
+      root.style.setProperty('--bg-overlay-opacity', state.theme.overlayOpacity ?? 0.12);
+
+      if (state.theme.bgImage) {
+        root.style.setProperty('--bg-image', `url(${state.theme.bgImage})`);
+      } else {
+        root.style.setProperty('--bg-image', 'none');
+      }
+
+      if (state.theme.isDark) {
+        root.style.setProperty('--card-bg', 'rgba(28, 30, 36, 0.95)');
+        root.style.setProperty('--card-border', 'rgba(255, 255, 255, 0.08)');
+      } else {
+        root.style.setProperty('--card-bg', '#ffffff');
+        root.style.setProperty('--card-border', 'rgba(255, 255, 255, 0.85)');
       }
     }
 
+    // Modal Helper
+    let onModalSubmitCallback = null;
+    function openModal(heading, label, initialValue, onSubmit) {
+      document.getElementById('modal-heading').innerText = heading;
+      document.getElementById('modal-label').innerText = label;
+      const input = document.getElementById('modal-input');
+      input.value = initialValue || '';
+      onModalSubmitCallback = onSubmit;
+      document.getElementById('general-modal').classList.remove('hidden');
+      input.focus();
+    }
+    function closeModal() {
+      document.getElementById('general-modal').classList.add('hidden');
+      onModalSubmitCallback = null;
+    }
+    document.getElementById('modal-btn-close').onclick = closeModal;
+    document.getElementById('modal-btn-cancel').onclick = closeModal;
+    document.getElementById('modal-btn-submit').onclick = () => {
+      const val = document.getElementById('modal-input').value.trim();
+      if (onModalSubmitCallback) onModalSubmitCallback(val);
+      closeModal();
+    };
+
+    function readDeviceImage(file, callback) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => callback(e.target.result);
+      reader.readAsDataURL(file);
+    }
+
+    // Render Master View
     function render() {
-      applyTheme();
-      document.getElementById('avatar-img').src = appData.profile.avatar;
-      document.getElementById('profile-name').innerText = appData.profile.name;
-      document.getElementById('profile-handle').innerText = appData.profile.handle;
-      document.getElementById('profile-bio').innerText = appData.profile.bio;
-      document.getElementById('affiliate-disclosure').innerText = appData.profile.disclosure;
+      applyThemeStyles();
 
-      document.querySelectorAll('.editable-elem').forEach(el => {
-        el.contentEditable = isAdmin ? "true" : "false";
-        el.classList.toggle('editable-focus', isAdmin);
-      });
+      // Admin Mode Classes & Controls
+      if (state.isAdmin) {
+        document.body.classList.add('is-admin');
+        document.getElementById('admin-dock').classList.remove('hidden');
+      } else {
+        document.body.classList.remove('is-admin');
+        document.getElementById('admin-dock').classList.add('hidden');
+      }
 
-      document.getElementById('btn-change-avatar').classList.toggle('hidden', !isAdmin);
-      document.getElementById('admin-bar').classList.toggle('hidden', !isAdmin);
-      document.getElementById('btn-add-product').classList.toggle('hidden', !isAdmin);
-      document.getElementById('btn-add-link').classList.toggle('hidden', !isAdmin);
+      // Sync Profile UI Elements
+      document.getElementById('profile-name').innerText = state.profile.name;
+      document.getElementById('profile-handle').innerText = state.profile.handle;
+      document.getElementById('profile-img').src = state.profile.avatar;
 
-      renderFolders();
-      renderLinks();
+      // Enable text editing ONLY when in Admin mode
+      document.getElementById('profile-name').contentEditable = state.isAdmin ? "true" : "false";
+      document.getElementById('profile-handle').contentEditable = state.isAdmin ? "true" : "false";
 
-      if (currentActiveFolderId) {
-        renderFolderDetail(currentActiveFolderId);
+      // Segmented Pill Buttons
+      const tabLinksBtn = document.getElementById('tab-links-btn');
+      const tabShopBtn = document.getElementById('tab-shop-btn');
+      if (state.activeTab === 'shop') {
+        tabShopBtn.className = "px-7 py-2 rounded-full text-sm font-extrabold text-neutral-900 bg-white shadow-pill transition-all";
+        tabLinksBtn.className = "px-7 py-2 rounded-full text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-all";
+      } else {
+        tabLinksBtn.className = "px-7 py-2 rounded-full text-sm font-extrabold text-neutral-900 bg-white shadow-pill transition-all";
+        tabShopBtn.className = "px-7 py-2 rounded-full text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-all";
+      }
+
+      // Outlet Injection
+      const outlet = document.getElementById('content-outlet');
+      outlet.innerHTML = "";
+
+      if (state.activeTab === 'links') {
+        renderLinksTab(outlet);
+      } else if (state.currentFolderId) {
+        renderSubpageView(outlet);
+      } else {
+        renderCollectionsTab(outlet);
+      }
+
+      if (window.lucide) {
+        lucide.createIcons();
       }
     }
 
-    function renderFolders() {
-      const container = document.getElementById('folders-container');
-      container.innerHTML = '';
+    // View: Links Tab
+    function renderLinksTab(outlet) {
+      const container = document.createElement('div');
+      container.className = "flex flex-col gap-3 w-full fade-in";
 
-      appData.folders.forEach(folder => {
-        const card = document.createElement('div');
-        card.id = folder.id;
-        card.className = "w-full bg-white rounded-5xl p-5 card-shadow transition-transform active:scale-[0.99] relative cursor-pointer";
-
-        const previewItems = folder.items.slice(0, 4);
-        let previewsHtml = previewItems.length > 0 ? `
-          <div class="grid grid-cols-${Math.min(previewItems.length, 4)} gap-2 py-4 px-2 items-center justify-items-center">
-            ${previewItems.map(item => `
-              <div class="w-16 h-20 sm:w-20 sm:h-24 rounded-2xl bg-neutral-50 flex items-center justify-center overflow-hidden p-1">
-                <img src="${item.photo}" class="w-full h-full object-contain mix-blend-multiply" alt="${item.title}">
-              </div>
-            `).join('')}
-          </div>
-        ` : `<div class="py-8 text-center text-xs text-neutral-400 font-semibold">Empty Collection</div>`;
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs text-neutral-400">⠿</span>
-            <div class="flex items-center gap-1.5">
-              <button onclick="event.stopPropagation(); copyDeepLink('#${folder.id}')" 
-                      class="px-2.5 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[11px] font-semibold text-neutral-700 flex items-center gap-1" 
-                      title="Copy link to this folder">
-                🔗 <span class="hidden sm:inline">Copy Link</span>
-              </button>
-              ${isAdmin ? `<button onclick="event.stopPropagation(); deleteFolder('${folder.id}')" class="p-1 text-red-500 hover:text-red-700 text-xs">🗑️</button>` : ''}
-              <button class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-600">›</button>
-            </div>
-          </div>
-          ${previewsHtml}
-          <div class="text-center mt-1">
-            <h3 class="text-sm font-extrabold text-neutral-900">${folder.title}</h3>
-            <p class="text-[11px] font-bold text-neutral-400">${folder.items.length} Products</p>
+      state.links.forEach((linkItem, idx) => {
+        const item = document.createElement('div');
+        item.className = "w-full bg-white rounded-3xl p-4 shadow-card flex items-center justify-between border border-white/80 transition hover:shadow-card-hover";
+        item.innerHTML = `
+          <a href="${linkItem.url}" target="_blank" rel="noopener noreferrer" class="font-extrabold text-neutral-900 text-sm flex-1 text-center truncate px-2">
+            ${linkItem.title}
+          </a>
+          <div class="admin-only-flex flex items-center gap-1.5 flex-shrink-0">
+            <button class="btn-edit-url p-1.5 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl text-neutral-700" title="Edit Link Destination">
+              <i data-lucide="link" class="w-3.5 h-3.5"></i>
+            </button>
+            <button class="btn-del-link p-1.5 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600" title="Delete Link">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         `;
 
-        card.addEventListener('click', () => openFolderView(folder.id));
+        item.querySelector('.btn-edit-url').onclick = (e) => {
+          e.stopPropagation();
+          openModal("Edit Bio Link", "Web Address URL:", linkItem.url, (newUrl) => {
+            linkItem.url = newUrl;
+            render();
+          });
+        };
+
+        item.querySelector('.btn-del-link').onclick = (e) => {
+          e.stopPropagation();
+          state.links.splice(idx, 1);
+          render();
+        };
+
+        container.appendChild(item);
+      });
+
+      if (state.isAdmin) {
+        const addBtn = document.createElement('button');
+        addBtn.className = "w-full py-4 border-2 border-dashed border-neutral-400/80 rounded-3xl text-xs font-extrabold text-neutral-700 hover:bg-white/40 transition flex items-center justify-center gap-2";
+        addBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i><span>Add New Custom Bio Link</span>`;
+        addBtn.onclick = () => {
+          state.links.push({
+            id: 'lnk-' + Date.now(),
+            title: "New Featured Link",
+            url: "https://"
+          });
+          render();
+        };
+        container.appendChild(addBtn);
+      }
+
+      outlet.appendChild(container);
+    }
+
+    // View: Main Shop Collections
+    function renderCollectionsTab(outlet) {
+      const container = document.createElement('div');
+      container.className = "flex flex-col gap-4 w-full fade-in";
+
+      state.folders.forEach((folder, fIndex) => {
+        const card = document.createElement('div');
+        card.className = "folder-card w-full bg-white rounded-5xl p-5 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover relative flex flex-col justify-between";
+
+        // Cutout Products Showcase Row (Up to 4 images)
+        const showcase = document.createElement('div');
+        showcase.className = "w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none";
+
+        const previewSlice = folder.products.slice(0, 4);
+        if (previewSlice.length === 0) {
+          showcase.innerHTML = `
+            <div class="text-xs text-neutral-400 font-bold flex flex-col items-center gap-1.5">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-neutral-300"></i>
+              <span>Empty collection</span>
+            </div>
+          `;
+        } else {
+          previewSlice.forEach(p => {
+            const imgBox = document.createElement('div');
+            imgBox.className = "h-28 w-20 flex-shrink-0 flex items-center justify-center";
+            imgBox.innerHTML = `
+              <img src="${p.image}" alt="${p.title}" class="product-cutout max-h-full max-w-full object-contain">
+            `;
+            showcase.appendChild(imgBox);
+          });
+        }
+
+        // Folder Title, Counter & Action Controls
+        const footer = document.createElement('div');
+        footer.className = "w-full flex items-center justify-between pt-1";
+        footer.innerHTML = `
+          <div class="flex items-center gap-2.5 truncate pr-2">
+            <div class="text-neutral-400 flex items-center justify-center">
+              <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+            </div>
+            <div class="flex flex-col text-left truncate">
+              <span class="folder-title-box editable-box font-extrabold text-neutral-900 text-[15px] tracking-tight truncate" contenteditable="${state.isAdmin}">
+                ${folder.title}
+              </span>
+              <span class="text-[11px] font-semibold text-neutral-400">
+                ${folder.products.length} Products
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="admin-only-flex flex items-center gap-1">
+              <label class="p-2 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl cursor-pointer text-neutral-700 shadow-sm transition" title="Add Image from Gallery">
+                <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+                <input type="file" accept="image/*" class="hidden folder-gallery-input">
+              </label>
+              <button class="btn-folder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Collection">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-1">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </div>
+          </div>
+        `;
+
+        card.onclick = (e) => {
+          if (e.target.closest('.admin-only-flex') || e.target.classList.contains('folder-title-box')) return;
+          state.currentFolderId = folder.id;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        footer.querySelector('.folder-title-box').addEventListener('blur', (e) => {
+          folder.title = e.target.innerText.trim() || "Untitled Folder";
+        });
+
+        footer.querySelector('.folder-gallery-input').addEventListener('change', (e) => {
+          readDeviceImage(e.target.files[0], (dataUri) => {
+            folder.products.push({
+              id: 'prod-' + Date.now(),
+              title: "New Pick",
+              price: "$29.00",
+              image: dataUri,
+              link: "https://amazon.com"
+            });
+            render();
+          });
+        });
+
+        footer.querySelector('.btn-folder-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          state.folders.splice(fIndex, 1);
+          render();
+        });
+
+        card.appendChild(showcase);
+        card.appendChild(footer);
         container.appendChild(card);
+      });
+
+      outlet.appendChild(container);
+    }
+
+    // View: Dedicated Subpage View for a Folder
+    function renderSubpageView(outlet) {
+      const folder = state.folders.find(f => f.id === state.currentFolderId);
+      if (!folder) {
+        state.currentFolderId = null;
+        render();
+        return;
+      }
+
+      const subpage = document.createElement('div');
+      subpage.className = "flex flex-col gap-4 w-full fade-in";
+
+      // Navigation Header Bar
+      const navHeader = document.createElement('div');
+      navHeader.className = "flex items-center justify-between w-full pb-1";
+      navHeader.innerHTML = `
+        <button id="btn-back-folders" class="flex items-center gap-1.5 text-xs font-extrabold text-neutral-900 bg-white/90 hover:bg-white px-4 py-2.5 rounded-full shadow-card backdrop-blur transition active:scale-95">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span>Back to All Collections</span>
+        </button>
+        <span class="text-xs font-bold text-neutral-700 tracking-wider uppercase px-2">
+          ${folder.products.length} Products
+        </span>
+      `;
+      navHeader.querySelector('#btn-back-folders').onclick = () => {
+        state.currentFolderId = null;
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Header Banner
+      const headerCard = document.createElement('div');
+      headerCard.className = "bg-white rounded-4xl p-4 shadow-card border border-white flex items-center justify-between";
+      headerCard.innerHTML = `
+        <div class="flex items-center gap-2 truncate pr-2">
+          <i data-lucide="folder" class="w-5 h-5 text-neutral-800 flex-shrink-0"></i>
+          <h2 class="subpage-title editable-box font-extrabold text-neutral-900 text-lg tracking-tight truncate" contenteditable="${state.isAdmin}">
+            ${folder.title}
+          </h2>
+        </div>
+        <div class="admin-only-flex flex gap-1">
+          <label class="cursor-pointer bg-neutral-900 text-white text-xs font-bold px-3 py-2 rounded-2xl shadow-sm hover:bg-black transition flex items-center gap-1.5">
+            <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+            <span>Upload Photo</span>
+            <input type="file" accept="image/*" class="hidden subpage-photo-input">
+          </label>
+        </div>
+      `;
+
+      headerCard.querySelector('.subpage-title').addEventListener('blur', (e) => {
+        folder.title = e.target.innerText.trim() || "Untitled Folder";
+      });
+
+      headerCard.querySelector('.subpage-photo-input').addEventListener('change', (e) => {
+        readDeviceImage(e.target.files[0], (base64) => {
+          folder.products.push({
+            id: 'prod-' + Date.now(),
+            title: "New Outfit Item",
+            price: "$34.00",
+            image: base64,
+            link: "https://amazon.com"
+          });
+          render();
+        });
+      });
+
+      subpage.appendChild(navHeader);
+      subpage.appendChild(headerCard);
+
+      // Two Column Grid
+      const productGrid = document.createElement('div');
+      productGrid.className = "grid grid-cols-2 gap-3.5 w-full pt-1";
+
+      if (folder.products.length === 0) {
+        const emptyAlert = document.createElement('div');
+        emptyAlert.className = "col-span-2 bg-white/70 rounded-4xl p-8 text-center text-xs font-bold text-neutral-600";
+        emptyAlert.innerText = "No products here yet.";
+        productGrid.appendChild(emptyAlert);
+      }
+
+      folder.products.forEach((prod, pIndex) => {
+        const itemCard = document.createElement('div');
+        itemCard.className = "bg-white rounded-4xl p-3 shadow-card border border-white flex flex-col justify-between transition hover:shadow-card-hover relative group";
+
+        itemCard.innerHTML = `
+          <div class="relative w-full aspect-square rounded-3xl overflow-hidden bg-neutral-50 mb-2.5 flex items-center justify-center p-3">
+            <img src="${prod.image}" alt="${prod.title}" class="max-h-full max-w-full object-contain product-cutout">
+
+            <div class="admin-only-flex absolute top-1.5 inset-x-1.5 flex justify-between gap-1 z-20">
+              <label class="bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl cursor-pointer backdrop-blur shadow flex items-center gap-1">
+                <i data-lucide="camera" class="w-3 h-3"></i> Photo
+                <input type="file" accept="image/*" class="hidden prod-replace-input">
+              </label>
+              <button class="btn-prod-link bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl backdrop-blur shadow flex items-center gap-1">
+                <i data-lucide="link" class="w-3 h-3"></i> Link
+              </button>
+              <button class="btn-prod-del bg-red-600/90 hover:bg-red-700 text-white text-[10px] font-bold p-1 rounded-xl backdrop-blur shadow">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="px-1 mb-2.5 flex flex-col flex-1">
+            <div class="prod-item-title editable-box font-extrabold text-xs text-neutral-900 line-clamp-2 leading-tight" contenteditable="${state.isAdmin}">
+              ${prod.title}
+            </div>
+            <div class="prod-item-price editable-box text-[11px] font-bold text-neutral-500 mt-1" contenteditable="${state.isAdmin}">
+              ${prod.price || '$0.00'}
+            </div>
+          </div>
+
+          <a href="${prod.link}" target="_blank" rel="noopener noreferrer" 
+             class="w-full py-2.5 bg-neutral-900 hover:bg-black text-white rounded-2xl text-center text-xs font-extrabold shadow-sm transition block tracking-tight">
+            Shop on Amazon
+          </a>
+        `;
+
+        itemCard.querySelector('.prod-item-title').addEventListener('blur', (e) => {
+          prod.title = e.target.innerText.trim();
+        });
+
+        itemCard.querySelector('.prod-item-price').addEventListener('blur', (e) => {
+          prod.price = e.target.innerText.trim();
+        });
+
+        itemCard.querySelector('.prod-replace-input').addEventListener('change', (e) => {
+          readDeviceImage(e.target.files[0], (dataUri) => {
+            prod.image = dataUri;
+            render();
+          });
+        });
+
+        itemCard.querySelector('.btn-prod-link').addEventListener('click', () => {
+          openModal(`Edit Link for "${prod.title}"`, "Destination Affiliate URL:", prod.link, (newUrl) => {
+            prod.link = newUrl;
+            render();
+          });
+        });
+
+        itemCard.querySelector('.btn-prod-del').addEventListener('click', () => {
+          folder.products.splice(pIndex, 1);
+          render();
+        });
+
+        productGrid.appendChild(itemCard);
+      });
+
+      subpage.appendChild(productGrid);
+      outlet.appendChild(subpage);
+    }
+
+    // PIN Authentication Setup
+    function setupAdminSecurity() {
+      const pinModal = document.getElementById('pin-modal');
+      const pinInput = document.getElementById('pin-input');
+      const pinErrorMsg = document.getElementById('pin-error-msg');
+      const avatarTarget = document.getElementById('avatar-tap-target');
+
+      function openPinPrompt() {
+        pinInput.value = '';
+        pinErrorMsg.classList.add('hidden');
+        pinModal.classList.remove('hidden');
+        pinInput.focus();
+      }
+
+      function closePinPrompt() {
+        pinModal.classList.add('hidden');
+        pinInput.value = '';
+      }
+
+      document.getElementById('btn-pin-cancel').onclick = closePinPrompt;
+
+      document.getElementById('btn-pin-submit').onclick = () => {
+        const entered = pinInput.value.trim();
+        if (entered === state.adminPin) {
+          state.isAdmin = true;
+          closePinPrompt();
+          render();
+          showToast("Admin mode unlocked!");
+        } else {
+          pinErrorMsg.classList.remove('hidden');
+          pinInput.value = '';
+          pinInput.focus();
+        }
+      };
+
+      pinInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btn-pin-submit').click();
+      });
+
+      // Detection A: Secret URL parameter (?edit or ?admin)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('edit') || urlParams.has('admin')) {
+        setTimeout(openPinPrompt, 300);
+      }
+
+      // Detection B: Secret Gesture (Triple-Tap on Avatar in under 800ms)
+      let tapCount = 0;
+      let tapTimer = null;
+      avatarTarget.addEventListener('click', () => {
+        tapCount++;
+        clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => {
+          tapCount = 0;
+        }, 800);
+
+        if (tapCount >= 3) {
+          tapCount = 0;
+          openPinPrompt();
+        }
+      });
+
+      // Exit Admin Mode
+      document.getElementById('btn-lock-exit').onclick = () => {
+        state.isAdmin = false;
+        render();
+        showToast("Storefront locked.");
+      };
+
+      // Change PIN Handlers
+      const changePinModal = document.getElementById('change-pin-modal');
+      const newPinInput = document.getElementById('new-pin-input');
+
+      document.getElementById('btn-dock-pin').onclick = () => {
+        newPinInput.value = '';
+        changePinModal.classList.remove('hidden');
+        newPinInput.focus();
+      };
+      document.getElementById('btn-close-changepin').onclick = () => {
+        changePinModal.classList.add('hidden');
+      };
+      document.getElementById('btn-save-new-pin').onclick = () => {
+        const np = newPinInput.value.trim();
+        if (np.length >= 4) {
+          state.adminPin = np;
+          changePinModal.classList.add('hidden');
+          showToast("PIN updated successfully!");
+        }
+      };
+    }
+
+    // Theme Drawer Setup
+    function setupThemeDrawer() {
+      const presetsGrid = document.getElementById('preset-themes-grid');
+      presetsGrid.innerHTML = '';
+
+      PRESET_THEMES.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.className = "flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group";
+        btn.innerHTML = `
+          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: ${preset.bgColor};"></div>
+          <span class="text-xs font-bold text-neutral-800 truncate">${preset.name}</span>
+        `;
+        btn.onclick = () => {
+          state.theme.presetId = preset.id;
+          state.theme.bgColor = preset.bgColor;
+          state.theme.textColor = preset.textColor;
+          state.theme.subtextColor = preset.subtextColor;
+          state.theme.isDark = preset.isDark;
+          document.getElementById('theme-color-picker').value = preset.bgColor;
+          document.getElementById('custom-hex-label').innerText = preset.bgColor;
+          render();
+        };
+        presetsGrid.appendChild(btn);
+      });
+
+      const colorPicker = document.getElementById('theme-color-picker');
+      const hexLabel = document.getElementById('custom-hex-label');
+      colorPicker.value = state.theme.bgColor;
+      hexLabel.innerText = state.theme.bgColor;
+
+      colorPicker.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        hexLabel.innerText = hex;
+        state.theme.bgColor = hex;
+        state.theme.presetId = 'custom';
+        const r = parseInt(hex.slice(1,3), 16);
+        const g = parseInt(hex.slice(3,5), 16);
+        const b = parseInt(hex.slice(5,7), 16);
+        const yiq = ((r*299)+(g*587)+(b*114))/1000;
+        state.theme.isDark = (yiq < 128);
+        state.theme.textColor = state.theme.isDark ? '#f9fafb' : '#111827';
+        state.theme.subtextColor = state.theme.isDark ? '#9ca3af' : '#4b5563';
+        render();
+      });
+
+      document.getElementById('theme-bg-file').addEventListener('change', (e) => {
+        readDeviceImage(e.target.files[0], (dataUri) => {
+          state.theme.bgImage = dataUri;
+          render();
+        });
+      });
+
+      document.getElementById('btn-remove-bg-image').onclick = () => {
+        state.theme.bgImage = '';
+        render();
+      };
+
+      const overlaySlider = document.getElementById('theme-overlay-slider');
+      const overlayValText = document.getElementById('overlay-val-text');
+      overlaySlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        overlayValText.innerText = val + '%';
+        state.theme.overlayOpacity = val / 100;
+        render();
+      });
+
+      const blurSlider = document.getElementById('theme-blur-slider');
+      const blurValText = document.getElementById('blur-val-text');
+      blurSlider.addEventListener('input', (e) => {
+        const val = e.target.value;
+        blurValText.innerText = val + 'px';
+        state.theme.blur = parseInt(val);
+        render();
+      });
+
+      document.getElementById('btn-dock-theme').onclick = () => {
+        document.getElementById('theme-modal').classList.remove('hidden');
+      };
+      document.getElementById('theme-modal-close').onclick = () => {
+        document.getElementById('theme-modal').classList.add('hidden');
+      };
+      document.getElementById('theme-modal-apply').onclick = () => {
+        document.getElementById('theme-modal').classList.add('hidden');
+      };
+    }
+
+    // Generate Production HTML Payload
+    function generateCleanHtml() {
+      state.profile.name = document.getElementById('profile-name').innerText.trim() || state.profile.name;
+      state.profile.handle = document.getElementById('profile-handle').innerText.trim() || state.profile.handle;
+
+      const docClone = document.documentElement.cloneNode(true);
+      docClone.classList.remove('is-admin');
+
+      // Set default initial state to locked visitor mode in the export
+      const scripts = docClone.querySelectorAll('script');
+      scripts.forEach(s => {
+        if (s.textContent.includes('let state = {')) {
+          const stateExport = JSON.parse(JSON.stringify(state));
+          stateExport.isAdmin = false;
+          s.textContent = s.textContent.replace(
+            /let state = [\s\S]*?;\n\n    \/\/ Toast Utility/,
+            `let state = ${JSON.stringify(stateExport, null, 2)};\n\n    // Toast Utility`
+          );
+        }
+      });
+
+      return "<!DOCTYPE html>\n" + docClone.outerHTML;
+    }
+
+    // GitHub API 1-Click Sync
+    function setupGitHubPublishing() {
+      const ghModal = document.getElementById('github-modal');
+      const ownerInput = document.getElementById('gh-owner');
+      const repoInput = document.getElementById('gh-repo');
+      const branchInput = document.getElementById('gh-branch');
+      const pathInput = document.getElementById('gh-path');
+      const tokenInput = document.getElementById('gh-token');
+
+      // Load saved settings from local storage
+      const savedConfig = JSON.parse(localStorage.getItem('gh_sync_config') || '{}');
+      if (savedConfig.owner) ownerInput.value = savedConfig.owner;
+      if (savedConfig.repo) repoInput.value = savedConfig.repo;
+      if (savedConfig.branch) branchInput.value = savedConfig.branch;
+      if (savedConfig.path) pathInput.value = savedConfig.path;
+      if (savedConfig.token) tokenInput.value = savedConfig.token;
+
+      document.getElementById('btn-dock-sync').onclick = () => {
+        ghModal.classList.remove('hidden');
+      };
+      document.getElementById('btn-close-gh-modal').onclick = () => {
+        ghModal.classList.add('hidden');
+      };
+
+      document.getElementById('btn-save-gh-settings').onclick = () => {
+        const config = {
+          owner: ownerInput.value.trim(),
+          repo: repoInput.value.trim(),
+          branch: branchInput.value.trim() || 'main',
+          path: pathInput.value.trim() || 'index.html',
+          token: tokenInput.value.trim()
+        };
+        localStorage.setItem('gh_sync_config', JSON.stringify(config));
+        ghModal.classList.add('hidden');
+        showToast("GitHub sync settings saved!");
+      };
+
+      // Direct 1-Click Publish to GitHub API
+      const publishBtn = document.getElementById('btn-dock-publish');
+      const publishLabel = document.getElementById('btn-publish-label');
+
+      publishBtn.onclick = async () => {
+        const cfg = JSON.parse(localStorage.getItem('gh_sync_config') || '{}');
+
+        if (!cfg.owner || !cfg.repo || !cfg.token) {
+          ghModal.classList.remove('hidden');
+          showToast("Please enter your GitHub details first", true);
+          return;
+        }
+
+        try {
+          publishBtn.disabled = true;
+          publishLabel.innerText = "Publishing...";
+          publishBtn.classList.add('opacity-75');
+
+          const cleanHtml = generateCleanHtml();
+          
+          // UTF-8 to Base64 encode
+          const utf8Bytes = new TextEncoder().encode(cleanHtml);
+          let binaryStr = '';
+          for (let i = 0; i < utf8Bytes.length; i++) {
+            binaryStr += String.fromCharCode(utf8Bytes[i]);
+          }
+          const base64Content = btoa(binaryStr);
+
+          // 1. Fetch existing file SHA (if it exists)
+          const fileUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`;
+          const getRes = await fetch(fileUrl, {
+            headers: {
+              'Authorization': `Bearer ${cfg.token}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+
+          let sha = null;
+          if (getRes.status === 200) {
+            const fileData = await getRes.json();
+            sha = fileData.sha;
+          }
+
+          // 2. Commit and push updated HTML
+          const putPayload = {
+            message: `Update bio storefront via mobile admin [${new Date().toLocaleTimeString()}]`,
+            content: base64Content,
+            branch: cfg.branch
+          };
+          if (sha) putPayload.sha = sha;
+
+          const putRes = await fetch(fileUrl, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${cfg.token}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(putPayload)
+          });
+
+          if (!putRes.ok) {
+            const errJson = await putRes.json();
+            throw new Error(errJson.message || 'Failed to push commit');
+          }
+
+          showToast("🚀 Published to GitHub! Site will update in ~60s.");
+        } catch (err) {
+          console.error(err);
+          showToast(`Publish error: ${err.message}`, true);
+        } finally {
+          publishBtn.disabled = false;
+          publishLabel.innerText = "Publish Live";
+          publishBtn.classList.remove('opacity-75');
+        }
+      };
+    }
+
+    // General Event Handlers
+    function initEventListeners() {
+      document.getElementById('tab-links-btn').onclick = () => {
+        state.activeTab = 'links';
+        state.currentFolderId = null;
+        render();
+      };
+
+      document.getElementById('tab-shop-btn').onclick = () => {
+        state.activeTab = 'shop';
+        render();
+      };
+
+      document.getElementById('profile-avatar-input').addEventListener('change', (e) => {
+        readDeviceImage(e.target.files[0], (base64) => {
+          state.profile.avatar = base64;
+          render();
+        });
+      });
+
+      document.getElementById('profile-name').addEventListener('blur', (e) => {
+        state.profile.name = e.target.innerText.trim() || "Isabelle";
+      });
+      document.getElementById('profile-handle').addEventListener('blur', (e) => {
+        state.profile.handle = e.target.innerText.trim() || "@isabelle";
+      });
+
+      // Dock: Add Folder
+      document.getElementById('btn-dock-folder').onclick = () => {
+        const newId = 'folder-' + Date.now();
+        state.folders.unshift({
+          id: newId,
+          title: "New Curated Collection",
+          products: [
+            {
+              id: 'prod-' + Date.now(),
+              title: "Favorite Item",
+              price: "$32.00",
+              image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=400&q=80",
+              link: "https://amazon.com"
+            }
+          ]
+        });
+        state.activeTab = 'shop';
+        state.currentFolderId = newId;
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Dock: Add Product
+      document.getElementById('btn-dock-product').onclick = () => {
+        state.activeTab = 'shop';
+        if (!state.currentFolderId) {
+          if (state.folders.length === 0) {
+            const newFid = 'folder-' + Date.now();
+            state.folders.push({
+              id: newFid,
+              title: "My Collection",
+              products: []
+            });
+            state.currentFolderId = newFid;
+          } else {
+            state.currentFolderId = state.folders[0].id;
+          }
+        }
+
+        const currentFolder = state.folders.find(f => f.id === state.currentFolderId);
+        if (currentFolder) {
+          currentFolder.products.push({
+            id: 'prod-' + Date.now(),
+            title: "New Pick",
+            price: "$29.00",
+            image: "https://placehold.co/400x400/ffffff/111827?text=Upload+Photo",
+            link: "https://amazon.com"
+          });
+          render();
+        }
+      };
+
+      // Fallback: Download HTML File
+      document.getElementById('btn-dock-download').onclick = () => {
+        const completeHtml = generateCleanHtml();
+        const blob = new Blob([completeHtml], { type: 'text/html;charset=utf-8' });
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = URL.createObjectURL(blob);
+        downloadAnchor.download = 'index.html';
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        document.body.removeChild(downloadAnchor);
+        URL.revokeObjectURL(downloadAnchor.href);
+        showToast("Downloaded index.html");
+      };
+    }
+
+    // App Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      setupAdminSecurity();
+      setupThemeDrawer();
+      setupGitHubPublishing();
+      initEventListeners();
+      render();
+    });
+  </script>
+
+  <!-- =========================================================================
+       EXTENSION CODES (PRESERVING 100% OF ORIGINAL SCRIPT ABOVE UNTOUCHED)
+       ========================================================================= -->
+  <script>
+    // 1. Pulsing highlight style for direct deep-linked dress
+    const pulseStyleTag = document.createElement('style');
+    pulseStyleTag.textContent = `
+      @keyframes dressDeepPulse {
+        0% { transform: scale(1.03); box-shadow: 0 0 0 4px #10b981, 0 16px 32px rgba(16, 185, 129, 0.35); }
+        70% { transform: scale(1.01); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4); }
+        100% { transform: scale(1); box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.05); }
+      }
+      .highlight-pulse {
+        animation: dressDeepPulse 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+      }
+    `;
+    document.head.appendChild(pulseStyleTag);
+
+    // 2. Safe Deep-Link Copy Helper
+    function copyDeepLink(hash, label) {
+      const cleanHash = hash.startsWith('#') ? hash : '#' + hash;
+      const url = `${window.location.origin}${window.location.pathname}${cleanHash}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast(`${label || 'Link'} copied to clipboard!`);
+        }).catch(() => {
+          prompt(`Copy ${label || 'Link'}:`, url);
+        });
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast(`${label || 'Link'} copied to clipboard!`);
+      }
+    }
+
+    // 3. Recursive folder finder (supports unlimited nested folders)
+    function findFolderRecursive(folders, id, parent = null) {
+      if (!folders) return null;
+      for (const f of folders) {
+        if (f.id === id) return { folder: f, parent: parent };
+        if (f.subfolders && f.subfolders.length > 0) {
+          const res = findFolderRecursive(f.subfolders, id, f);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+
+    // 4. Locate individual dress and its parent folder across any depth
+    function findProductAndFolder(folders, prodId) {
+      if (!folders) return null;
+      for (const f of folders) {
+        if (f.products && f.products.some(p => p.id === prodId)) {
+          return { folder: f, product: f.products.find(p => p.id === prodId) };
+        }
+        if (f.subfolders && f.subfolders.length > 0) {
+          const res = findProductAndFolder(f.subfolders, prodId);
+          if (res) return res;
+        }
+      }
+      return null;
+    }
+
+    // 5. Total product counter
+    function countTotalProducts(folder) {
+      let count = (folder.products || []).length;
+      if (folder.subfolders && folder.subfolders.length > 0) {
+        folder.subfolders.forEach(sub => {
+          count += countTotalProducts(sub);
+        });
+      }
+      return count;
+    }
+
+    // 6. Preview thumbnails collector
+    function collectPreviewPhotos(folder) {
+      let imgs = (folder.products || []).map(p => p.image);
+      if (folder.subfolders && folder.subfolders.length > 0) {
+        for (const sub of folder.subfolders) {
+          imgs = imgs.concat(collectPreviewPhotos(sub));
+          if (imgs.length >= 4) break;
+        }
+      }
+      return imgs.slice(0, 4);
+    }
+
+    // 7. Hash Deep Link Router
+    function handleDeepLinks() {
+      if (state.activeTab === 'links' && !window.location.hash) return;
+      const rawHash = (window.location.hash || '').replace('#', '').trim();
+      if (!rawHash) return;
+
+      const prodMatch = findProductAndFolder(state.folders, rawHash);
+      if (prodMatch) {
+        state.activeTab = 'shop';
+        state.currentFolderId = prodMatch.folder.id;
+        render();
+        setTimeout(() => {
+          const el = document.getElementById(prodMatch.product.id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlight-pulse');
+            setTimeout(() => el.classList.remove('highlight-pulse'), 3000);
+          }
+        }, 350);
+        return;
+      }
+
+      const folderMatch = findFolderRecursive(state.folders, rawHash);
+      if (folderMatch) {
+        state.activeTab = 'shop';
+        state.currentFolderId = folderMatch.folder.id;
+        render();
+        window.scrollTo({ top: 80, behavior: 'smooth' });
+      }
+    }
+    window.addEventListener('hashchange', handleDeepLinks);
+
+    // 8. Unblock Links button click
+    const originalLinksBtn = document.getElementById('tab-links-btn');
+    if (originalLinksBtn) {
+      originalLinksBtn.addEventListener('click', () => {
+        state.activeTab = 'links';
+        state.currentFolderId = null;
+        if (window.location.hash) {
+          try {
+            history.replaceState(null, '', window.location.pathname + (state.isAdmin ? '?edit' : ''));
+          } catch(e) {}
+        }
+        render();
       });
     }
 
-    function renderFolderDetail(folderId) {
-      const folder = appData.folders.find(f => f.id === folderId);
-      if (!folder) return;
+    // 9. Enhancing dock buttons to support subfolders
+    const dockProductBtn = document.getElementById('btn-dock-product');
+    if (dockProductBtn) {
+      dockProductBtn.onclick = () => {
+        state.activeTab = 'shop';
+        if (!state.currentFolderId) {
+          if (state.folders.length === 0) {
+            const newFid = 'folder-' + Date.now();
+            state.folders.push({
+              id: newFid,
+              title: "My Collection",
+              subfolders: [],
+              products: []
+            });
+            state.currentFolderId = newFid;
+          } else {
+            state.currentFolderId = state.folders[0].id;
+          }
+        }
 
-      document.getElementById('detail-folder-title').innerText = folder.title;
-      document.getElementById('detail-folder-count').innerText = `${folder.items.length} Products`;
-      document.getElementById('btn-copy-current-folder').onclick = () => copyDeepLink(`#${folder.id}`);
+        const match = findFolderRecursive(state.folders, state.currentFolderId);
+        const targetFolder = match ? match.folder : state.folders[0];
 
-      const grid = document.getElementById('folder-products-grid');
-      grid.innerHTML = '';
+        if (targetFolder) {
+          if (!targetFolder.products) targetFolder.products = [];
+          const newProd = {
+            id: 'prod-' + Date.now(),
+            title: "New Outfit Pick",
+            price: "$29.00",
+            image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
+            link: "https://amazon.com"
+          };
+          targetFolder.products.push(newProd);
+          render();
+          openModal(`Paste Affiliate Link for "${newProd.title}"`, "Destination Affiliate URL:", newProd.link, (newUrl) => {
+            newProd.link = newUrl || "https://amazon.com";
+            render();
+          });
+        }
+      };
+    }
 
-      folder.items.forEach((item, index) => {
+    // 10. Update renderCollectionsTab with Share Button & Previews
+    renderCollectionsTab = function(outlet) {
+      const container = document.createElement('div');
+      container.className = "flex flex-col gap-4 w-full fade-in";
+
+      state.folders.forEach((folder, fIndex) => {
+        const card = document.createElement('div');
+        card.id = folder.id;
+        card.className = "folder-card w-full bg-white rounded-5xl p-5 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover relative flex flex-col justify-between";
+
+        const showcase = document.createElement('div');
+        showcase.className = "w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none";
+
+        const previewSlice = collectPreviewPhotos(folder);
+        if (previewSlice.length === 0) {
+          showcase.innerHTML = `
+            <div class="text-xs text-neutral-400 font-bold flex flex-col items-center gap-1.5">
+              <i data-lucide="shopping-bag" class="w-6 h-6 text-neutral-300"></i>
+              <span>Empty collection</span>
+            </div>
+          `;
+        } else {
+          previewSlice.forEach(imgUrl => {
+            const imgBox = document.createElement('div');
+            imgBox.className = "h-28 w-20 flex-shrink-0 flex items-center justify-center";
+            imgBox.innerHTML = `<img src="${imgUrl}" alt="Preview" class="product-cutout max-h-full max-w-full object-contain">`;
+            showcase.appendChild(imgBox);
+          });
+        }
+
+        const footer = document.createElement('div');
+        footer.className = "w-full flex items-center justify-between pt-1";
+        const subCount = (folder.subfolders || []).length;
+        const totalProducts = countTotalProducts(folder);
+        const countText = subCount > 0 ? `${subCount} Folders • ${totalProducts} Products` : `${totalProducts} Products`;
+
+        footer.innerHTML = `
+          <div class="flex items-center gap-2.5 truncate pr-2">
+            <div class="text-neutral-400 flex items-center justify-center">
+              <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+            </div>
+            <div class="flex flex-col text-left truncate">
+              <span class="folder-title-box editable-box font-extrabold text-neutral-900 text-[15px] tracking-tight truncate" contenteditable="${state.isAdmin}">
+                ${folder.title}
+              </span>
+              <span class="text-[11px] font-semibold text-neutral-400">
+                ${countText}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <!-- Dedicated Folder Share Button -->
+            <button class="btn-copy-folder-link px-2.5 py-1.5 text-[11px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition flex items-center gap-1 shadow-sm active:scale-95" title="Copy link to this collection">
+              <i data-lucide="link" class="w-3.5 h-3.5 text-neutral-700"></i>
+              <span>Share</span>
+            </button>
+
+            <div class="admin-only-flex flex items-center gap-1">
+              <label class="p-2 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl cursor-pointer text-neutral-700 shadow-sm transition" title="Add Image from Gallery">
+                <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+                <input type="file" accept="image/*" class="hidden folder-gallery-input">
+              </label>
+              <button class="btn-folder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Collection">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-0.5">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </div>
+          </div>
+        `;
+
+        card.onclick = (e) => {
+          if (e.target.closest('.btn-copy-folder-link') || e.target.closest('.admin-only-flex') || e.target.classList.contains('folder-title-box')) return;
+          state.currentFolderId = folder.id;
+          window.location.hash = folder.id;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        footer.querySelector('.btn-copy-folder-link').onclick = (e) => {
+          e.stopPropagation();
+          copyDeepLink(folder.id, `Collection "${folder.title}" link`);
+        };
+
+        footer.querySelector('.folder-title-box').addEventListener('blur', (e) => {
+          folder.title = e.target.innerText.trim() || "Untitled Folder";
+        });
+
+        footer.querySelector('.folder-gallery-input').addEventListener('change', (e) => {
+          readDeviceImage(e.target.files[0], (dataUri) => {
+            if (!folder.products) folder.products = [];
+            folder.products.push({
+              id: 'prod-' + Date.now(),
+              title: "New Pick",
+              price: "$29.00",
+              image: dataUri,
+              link: "https://amazon.com"
+            });
+            render();
+          });
+        });
+
+        footer.querySelector('.btn-folder-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          state.folders.splice(fIndex, 1);
+          render();
+        });
+
+        card.appendChild(showcase);
+        card.appendChild(footer);
+        container.appendChild(card);
+      });
+
+      outlet.appendChild(container);
+    };
+
+    // 11. Update renderSubpageView with Subfolder & Dress Creation + Linking
+    renderSubpageView = function(outlet) {
+      const match = findFolderRecursive(state.folders, state.currentFolderId);
+      if (!match) {
+        state.currentFolderId = null;
+        render();
+        return;
+      }
+
+      const folder = match.folder;
+      const parent = match.parent;
+      if (!folder.subfolders) folder.subfolders = [];
+      if (!folder.products) folder.products = [];
+
+      const subpage = document.createElement('div');
+      subpage.className = "flex flex-col gap-4 w-full fade-in";
+
+      // Navigation Header Bar
+      const navHeader = document.createElement('div');
+      navHeader.className = "flex items-center justify-between w-full pb-1 gap-2";
+      const backText = parent ? `Back to ${parent.title}` : `Back to All Collections`;
+
+      navHeader.innerHTML = `
+        <button id="btn-back-folders" class="flex items-center gap-1.5 text-xs font-extrabold text-neutral-900 bg-white/90 hover:bg-white px-3.5 py-2.5 rounded-full shadow-card backdrop-blur transition active:scale-95 truncate max-w-[240px]">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5 flex-shrink-0"></i>
+          <span class="truncate">${backText}</span>
+        </button>
+        <button id="btn-share-subpage-folder" class="flex items-center gap-1 text-xs font-bold text-neutral-800 bg-white/90 hover:bg-white px-3 py-2.5 rounded-full shadow-card backdrop-blur transition active:scale-95 flex-shrink-0" title="Copy direct link to this folder">
+          <i data-lucide="link" class="w-3.5 h-3.5 text-neutral-700"></i>
+          <span>Share Folder</span>
+        </button>
+      `;
+
+      navHeader.querySelector('#btn-back-folders').onclick = () => {
+        if (parent) {
+          state.currentFolderId = parent.id;
+          window.location.hash = parent.id;
+        } else {
+          state.currentFolderId = null;
+          try {
+            history.replaceState(null, '', window.location.pathname + (state.isAdmin ? '?edit' : ''));
+          } catch(e) {}
+        }
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      navHeader.querySelector('#btn-share-subpage-folder').onclick = () => {
+        copyDeepLink(folder.id, `Folder "${folder.title}" link`);
+      };
+
+      // Header Banner with both "+ Folder" and "+ Add Dress / Link" buttons
+      const headerCard = document.createElement('div');
+      headerCard.className = "bg-white rounded-4xl p-4 shadow-card border border-white flex items-center justify-between gap-2";
+      headerCard.innerHTML = `
+        <div class="flex items-center gap-2 truncate pr-2">
+          <i data-lucide="folder" class="w-5 h-5 text-neutral-800 flex-shrink-0"></i>
+          <h2 class="subpage-title editable-box font-extrabold text-neutral-900 text-lg tracking-tight truncate" contenteditable="${state.isAdmin}">
+            ${folder.title}
+          </h2>
+        </div>
+        <div class="admin-only-flex flex items-center gap-1 flex-shrink-0">
+          <button id="btn-add-subfolder-inner" class="cursor-pointer bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-bold px-2.5 py-2 rounded-2xl shadow-sm transition flex items-center gap-1" title="Create Subfolder">
+            <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span>+ Folder</span>
+          </button>
+          <button id="btn-add-dress-inner" class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-2xl shadow-sm transition flex items-center gap-1" title="Add Dress with Affiliate Link">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>+ Add Dress</span>
+          </button>
+          <label class="cursor-pointer bg-neutral-900 text-white text-xs font-bold px-2.5 py-2 rounded-2xl shadow-sm hover:bg-black transition flex items-center gap-1" title="Upload Photo from Gallery">
+            <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
+            <span>Photo</span>
+            <input type="file" accept="image/*" class="hidden subpage-photo-input">
+          </label>
+        </div>
+      `;
+
+      headerCard.querySelector('.subpage-title').addEventListener('blur', (e) => {
+        folder.title = e.target.innerText.trim() || "Untitled Folder";
+      });
+
+      // Action: Create Subfolder
+      headerCard.querySelector('#btn-add-subfolder-inner').onclick = () => {
+        const subName = prompt("Enter subfolder name:", "Sub Collection");
+        if (subName && subName.trim()) {
+          const newSubId = 'folder-' + Date.now();
+          folder.subfolders.push({
+            id: newSubId,
+            title: subName.trim(),
+            subfolders: [],
+            products: []
+          });
+          state.currentFolderId = newSubId;
+          window.location.hash = newSubId;
+          render();
+          showToast(`Created subfolder "${subName.trim()}"`);
+        }
+      };
+
+      // Action: Add Dress with Affiliate Link Button
+      headerCard.querySelector('#btn-add-dress-inner').onclick = () => {
+        const newProd = {
+          id: 'prod-' + Date.now(),
+          title: "New Outfit Pick",
+          price: "$29.00",
+          image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
+          link: "https://amazon.com"
+        };
+        folder.products.push(newProd);
+        render();
+        openModal(`Paste Affiliate Link for "${newProd.title}"`, "Destination Affiliate URL:", newProd.link, (newUrl) => {
+          newProd.link = newUrl || "https://amazon.com";
+          render();
+        });
+      };
+
+      headerCard.querySelector('.subpage-photo-input').addEventListener('change', (e) => {
+        readDeviceImage(e.target.files[0], (base64) => {
+          folder.products.push({
+            id: 'prod-' + Date.now(),
+            title: "New Outfit Item",
+            price: "$34.00",
+            image: base64,
+            link: "https://amazon.com"
+          });
+          render();
+        });
+      });
+
+      subpage.appendChild(navHeader);
+      subpage.appendChild(headerCard);
+
+      // Subfolders Section
+      if (folder.subfolders && folder.subfolders.length > 0) {
+        const subSection = document.createElement('div');
+        subSection.className = "flex flex-col gap-3 w-full pt-1";
+
+        const subTitle = document.createElement('div');
+        subTitle.className = "text-[11px] font-extrabold uppercase tracking-wider text-neutral-500 px-2 flex items-center gap-1.5";
+        subTitle.innerHTML = `<i data-lucide="folder-tree" class="w-3.5 h-3.5"></i> Sub-Collections (${folder.subfolders.length})`;
+        subSection.appendChild(subTitle);
+
+        folder.subfolders.forEach((sub, sIndex) => {
+          const subCard = document.createElement('div');
+          subCard.id = sub.id;
+          subCard.className = "folder-card w-full bg-white rounded-4xl p-4 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover flex items-center justify-between";
+
+          const previewImg = collectPreviewPhotos(sub)[0];
+          const thumbHtml = previewImg 
+            ? `<div class="w-14 h-14 rounded-2xl bg-neutral-50 flex items-center justify-center p-1 flex-shrink-0"><img src="${previewImg}" class="max-h-full max-w-full object-contain product-cutout"></div>`
+            : `<div class="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400 flex-shrink-0"><i data-lucide="folder" class="w-6 h-6"></i></div>`;
+
+          subCard.innerHTML = `
+            <div class="flex items-center gap-3 truncate pr-2">
+              ${thumbHtml}
+              <div class="flex flex-col text-left truncate">
+                <span class="subfolder-title-box editable-box font-extrabold text-neutral-900 text-sm tracking-tight truncate" contenteditable="${state.isAdmin}">
+                  ${sub.title}
+                </span>
+                <span class="text-[11px] font-semibold text-neutral-400">
+                  ${countTotalProducts(sub)} Products
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button class="btn-copy-sub-link px-2.5 py-1.5 text-[11px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl transition flex items-center gap-1 shadow-sm active:scale-95" title="Copy link to this subfolder">
+                <i data-lucide="link" class="w-3.5 h-3.5 text-neutral-700"></i>
+                <span>Share</span>
+              </button>
+              <div class="admin-only-flex flex items-center gap-1">
+                <button class="btn-subfolder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Subfolder">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-0.5">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </div>
+            </div>
+          `;
+
+          subCard.onclick = (e) => {
+            if (e.target.closest('.btn-copy-sub-link') || e.target.closest('.admin-only-flex') || e.target.classList.contains('subfolder-title-box')) return;
+            state.currentFolderId = sub.id;
+            window.location.hash = sub.id;
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+
+          subCard.querySelector('.btn-copy-sub-link').onclick = (e) => {
+            e.stopPropagation();
+            copyDeepLink(sub.id, `Subfolder "${sub.title}" link`);
+          };
+
+          subCard.querySelector('.subfolder-title-box').addEventListener('blur', (e) => {
+            sub.title = e.target.innerText.trim() || "Untitled Folder";
+          });
+
+          subCard.querySelector('.btn-subfolder-delete').onclick = (e) => {
+            e.stopPropagation();
+            folder.subfolders.splice(sIndex, 1);
+            render();
+          };
+
+          subSection.appendChild(subCard);
+        });
+
+        subpage.appendChild(subSection);
+      }
+
+      // Products / Dresses Grid
+      const productGrid = document.createElement('div');
+      productGrid.className = "grid grid-cols-2 gap-3.5 w-full pt-1";
+
+      if (folder.products.length === 0 && (!folder.subfolders || folder.subfolders.length === 0)) {
+        const emptyAlert = document.createElement('div');
+        emptyAlert.className = "col-span-2 bg-white/70 rounded-4xl p-8 text-center text-xs font-bold text-neutral-600";
+        emptyAlert.innerText = "No products here yet.";
+        productGrid.appendChild(emptyAlert);
+      }
+
+      folder.products.forEach((prod, pIndex) => {
         const itemCard = document.createElement('div');
-        itemCard.id = item.id;
-        itemCard.className = "bg-white rounded-3xl p-3 card-shadow flex flex-col justify-between relative transition duration-300";
+        itemCard.id = prod.id;
+        itemCard.className = "bg-white rounded-4xl p-3 shadow-card border border-white flex flex-col justify-between transition hover:shadow-card-hover relative group";
 
         itemCard.innerHTML = `
-          ${is
+          <div class="relative w-full aspect-square rounded-3xl overflow-hidden bg-neutral-50 mb-2.5 flex items-center justify-center p-3">
+            <img src="${prod.image}" alt="${prod.title}" class="max-h-full max-w-full object-contain product-cutout">
+
+            <!-- Dedicated Individual Dress Link Copy Button (Top Right) -->
+            <button class="btn-copy-dress-link absolute top-2 right-2 bg-white/95 hover:bg-white text-neutral-800 p-1.5 rounded-full shadow-card backdrop-blur transition active:scale-90 z-20" title="Copy direct link to this dress">
+              <i data-lucide="link" class="w-3.5 h-3.5 text-neutral-800"></i>
+            </button>
+
+            <!-- Admin Action Overlay -->
+            <div class="admin-only-flex absolute top-1.5 inset-x-1.5 flex justify-between gap-1 z-30">
+              <label class="bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl cursor-pointer backdrop-blur shadow flex items-center gap-1">
+                <i data-lucide="camera" class="w-3 h-3"></i> Photo
+                <input type="file" accept="image/*" class="hidden prod-replace-input">
+              </label>
+              <button class="btn-prod-link bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl backdrop-blur shadow flex items-center gap-1">
+                <i data-lucide="link" class="w-3 h-3"></i> Link
+              </button>
+              <button class="btn-prod-del bg-red-600/90 hover:bg-red-700 text-white text-[10px] font-bold p-1 rounded-xl backdrop-blur shadow">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="px-1 mb-2.5 flex flex-col flex-1">
+            <div class="prod-item-title editable-box font-extrabold text-xs text-neutral-900 line-clamp-2 leading-tight" contenteditable="${state.isAdmin}">
+              ${prod.title}
+            </div>
+            <div class="prod-item-price editable-box text-[11px] font-bold text-neutral-500 mt-1" contenteditable="${state.isAdmin}">
+              ${prod.price || '$0.00'}
+            </div>
+          </div>
+
+          <a href="${prod.link}" target="_blank" rel="noopener noreferrer" 
+             class="w-full py-2.5 bg-neutral-900 hover:bg-black text-white rounded-2xl text-center text-xs font-extrabold shadow-sm transition block tracking-tight">
+            Shop on Amazon
+          </a>
+        `;
+
+        itemCard.querySelector('.btn-copy-dress-link').onclick = (e) => {
+          e.stopPropagation();
+          copyDeepLink(prod.id, `"${prod.title}" link`);
+        };
+
+        itemCard.querySelector('.prod-item-title').addEventListener('blur', (e) => {
+          prod.title = e.target.innerText.trim();
+        });
+
+        itemCard.querySelector('.prod-item-price').addEventListener('blur', (e) => {
+          prod.price = e.target.innerText.trim();
+        });
+
+        itemCard.querySelector('.prod-replace-input').addEventListener('change', (e) => {
+          readDeviceImage(e.target.files[0], (dataUri) => {
+            prod.image = dataUri;
+            render();
+          });
+        });
+
+        itemCard.querySelector('.btn-prod-link').addEventListener('click', () => {
+          openModal(`Edit Link for "${prod.title}"`, "Destination Affiliate URL:", prod.link, (newUrl) => {
+            prod.link = newUrl;
+            render();
+          });
+        });
+
+        itemCard.querySelector('.btn-prod-del').addEventListener('click', () => {
+          folder.products.splice(pIndex, 1);
+          render();
+        });
+
+        productGrid.appendChild(itemCard);
+      });
+
+      // Dashed Add Button at the bottom of the dresses grid (Admin only)
+      if (state.isAdmin) {
+        const addCardBtn = document.createElement('button');
+        addCardBtn.className = "col-span-2 py-4 border-2 border-dashed border-emerald-500/70 bg-emerald-50/50 hover:bg-emerald-100/60 rounded-3xl text-xs font-extrabold text-emerald-800 transition flex items-center justify-center gap-2 mt-2";
+        addCardBtn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 text-emerald-600"></i><span>+ Add New Dress & Affiliate Link Here</span>`;
+        addCardBtn.onclick = () => {
+          const newProd = {
+            id: 'prod-' + Date.now(),
+            title: "New Outfit Pick",
+            price: "$29.00",
+            image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
+            link: "https://amazon.com"
+          };
+          folder.products.push(newProd);
+          render();
+          openModal(`Paste Affiliate Link for "${newProd.title}"`, "Destination Affiliate URL:", newProd.link, (newUrl) => {
+            newProd.link = newUrl || "https://amazon.com";
+            render();
+          });
+        };
+        productGrid.appendChild(addCardBtn);
+      }
+
+      subpage.appendChild(productGrid);
+      outlet.appendChild(subpage);
+    };
+
+    // Run deep links check on load
+    handleDeepLinks();
+  </script>
+</body>
+</html>
