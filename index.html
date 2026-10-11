@@ -1,1550 +1,428 @@
 <!DOCTYPE html>
-<html lang="en" style="--bg-color: #d7e8cb; --text-color: #111827; --subtext-color: #4b5563; --bg-blur: 0px; --bg-overlay-opacity: 0.12; --bg-image: none; --card-bg: #ffffff; --card-border: rgba(255, 255, 255, 0.85);"><head>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Closet &amp; Style Hub</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Plus Jakarta Sans -->
+  <title>Closet | Curated Outfits</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&amp;display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
-          },
-          borderRadius: {
-            '3xl': '24px',
-            '4xl': '32px',
-            '5xl': '40px',
-          },
-          boxShadow: {
-            'card': '0 8px 24px -4px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03)',
-            'card-hover': '0 16px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
-            'pill': '0 2px 8px rgba(0, 0, 0, 0.07)',
-            'float': '0 20px 45px -10px rgba(0, 0, 0, 0.25)',
-          }
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          borderRadius: { '4xl': '2rem', '5xl': '2.5rem' }
         }
       }
     }
   </script>
-
   <style>
     :root {
       --bg-color: #d7e8cb;
-      --text-color: #111827;
-      --subtext-color: #4b5563;
       --card-bg: #ffffff;
-      --card-border: rgba(255, 255, 255, 0.85);
-      --bg-blur: 0px;
-      --bg-overlay-opacity: 0.12;
-      --bg-image: none;
+      --text-main: #14171a;
+      --text-muted: #657786;
+      --pill-bg: #c5dcba;
     }
-
     body {
       background-color: var(--bg-color);
-      color: var(--text-color);
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
-      margin: 0;
-      padding: 0;
+      transition: background 0.3s ease;
       -webkit-tap-highlight-color: transparent;
-      transition: background-color 0.3s ease;
-      position: relative;
-      overflow-x: hidden;
     }
-
-    /* Fixed full-screen wallpaper layer */
-    #theme-background-layer {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: var(--bg-color);
-      background-image: var(--bg-image);
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(var(--bg-blur));
-      transform: scale(1.05);
-      z-index: -2;
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
-
-    #theme-overlay-layer {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #000;
-      opacity: var(--bg-overlay-opacity);
-      z-index: -1;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    /* Editable box when in Admin mode */
-    body.is-admin .editable-box {
-      outline: 1.5px dashed rgba(16, 185, 129, 0.7);
+    .editable-focus {
+      outline: 2px dashed rgba(34, 197, 94, 0.7);
       outline-offset: 3px;
-      border-radius: 8px;
-      cursor: text;
+      border-radius: 6px;
     }
-    body.is-admin .editable-box:hover {
-      outline-color: #10b981;
-      background-color: rgba(255, 255, 255, 0.3);
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
     }
-    body.is-admin .editable-box:focus {
-      outline: 2px solid #059669;
-      background-color: rgba(255, 255, 255, 0.6);
+    .dock-shadow {
+      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 0, 0, 0.05);
     }
-
-    /* Admin UI Visibility Controls */
-    .admin-only-flex {
-      display: none !important;
+    .target-highlight {
+      animation: pulseHighlight 2.5s ease-out;
     }
-    body.is-admin .admin-only-flex {
-      display: flex !important;
-    }
-
-    .admin-only-block {
-      display: none !important;
-    }
-    body.is-admin .admin-only-block {
-      display: block !important;
-    }
-
-    /* Product Cutout Shadow & Float */
-    .product-cutout {
-      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .folder-card:hover .product-cutout {
-      transform: translateY(-4px) scale(1.03);
-    }
-
-    .fade-in {
-      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    @keyframes pulseHighlight {
+      0% { transform: scale(1.02); box-shadow: 0 0 0 4px #16a34a; }
+      70% { transform: scale(1.01); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.4); }
+      100% { transform: scale(1); box-shadow: none; }
     }
   </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Plus Jakarta Sans", system-ui, -apple-system, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.inset-x-0{left:0px;right:0px}.bottom-0{bottom:0px}.bottom-4{bottom:1rem}.right-0{right:0px}.top-5{top:1.25rem}.z-10{z-index:10}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-2\.5{margin-bottom:0.625rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-2{margin-top:0.5rem}.ml-1{margin-left:0.25rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-2{height:0.5rem}.h-24{height:6rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-full{height:100%}.h-28{height:7rem}.h-36{height:9rem}.h-8{height:2rem}.max-h-\[90vh\]{max-height:90vh}.max-h-full{max-height:100%}.min-h-screen{min-height:100vh}.w-12{width:3rem}.w-2{width:0.5rem}.w-24{width:6rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-\[90\%\]{width:90%}.w-auto{width:auto}.w-full{width:100%}.w-20{width:5rem}.w-8{width:2rem}.max-w-\[425px\]{max-width:425px}.max-w-\[430px\]{max-width:430px}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.max-w-xs{max-width:20rem}.max-w-full{max-width:100%}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.-translate-y-20{--tw-translate-y:-5rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-0{--tw-translate-y:0px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.self-start{align-self:flex-start}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:24px}.rounded-4xl{border-radius:32px}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-5xl{border-radius:40px}.rounded-t-\[36px\]{border-top-left-radius:36px;border-top-right-radius:36px}.border{border-width:1px}.border-\[3px\]{border-width:3px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-none{border-style:none}.border-neutral-100{--tw-border-opacity:1;border-color:rgb(245 245 245 / var(--tw-border-opacity, 1))}.border-neutral-200\/70{border-color:rgb(229 229 229 / 0.7)}.border-neutral-200\/80{border-color:rgb(229 229 229 / 0.8)}.border-neutral-200\/90{border-color:rgb(229 229 229 / 0.9)}.border-neutral-300{--tw-border-opacity:1;border-color:rgb(212 212 212 / var(--tw-border-opacity, 1))}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/80{border-color:rgb(255 255 255 / 0.8)}.border-black\/10{border-color:rgb(0 0 0 / 0.1)}.border-white\/90{border-color:rgb(255 255 255 / 0.9)}.bg-black\/10{background-color:rgb(0 0 0 / 0.1)}.bg-black\/50{background-color:rgb(0 0 0 / 0.5)}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-indigo-50{--tw-bg-opacity:1;background-color:rgb(238 242 255 / var(--tw-bg-opacity, 1))}.bg-neutral-100{--tw-bg-opacity:1;background-color:rgb(245 245 245 / var(--tw-bg-opacity, 1))}.bg-neutral-200{--tw-bg-opacity:1;background-color:rgb(229 229 229 / var(--tw-bg-opacity, 1))}.bg-neutral-50{--tw-bg-opacity:1;background-color:rgb(250 250 250 / var(--tw-bg-opacity, 1))}.bg-neutral-900{--tw-bg-opacity:1;background-color:rgb(23 23 23 / var(--tw-bg-opacity, 1))}.bg-neutral-900\/95{background-color:rgb(23 23 23 / 0.95)}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.object-contain{object-fit:contain}.object-cover{object-fit:cover}.p-0{padding:0px}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-2\.5{padding:0.625rem}.p-5{padding:1.25rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-7{padding-left:1.75rem;padding-right:1.75rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-3{padding-bottom:0.75rem}.pb-32{padding-bottom:8rem}.pt-0\.5{padding-top:0.125rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pt-8{padding-top:2rem}.pr-2{padding-right:0.5rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:"Plus Jakarta Sans", system-ui, -apple-system, sans-serif}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[26px\]{font-size:26px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[15px\]{font-size:15px}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-\[0\.3em\]{letter-spacing:0.3em}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229 / var(--tw-text-opacity, 1))}.text-indigo-700{--tw-text-opacity:1;color:rgb(67 56 202 / var(--tw-text-opacity, 1))}.text-neutral-400{--tw-text-opacity:1;color:rgb(163 163 163 / var(--tw-text-opacity, 1))}.text-neutral-500{--tw-text-opacity:1;color:rgb(115 115 115 / var(--tw-text-opacity, 1))}.text-neutral-600{--tw-text-opacity:1;color:rgb(82 82 82 / var(--tw-text-opacity, 1))}.text-neutral-700{--tw-text-opacity:1;color:rgb(64 64 64 / var(--tw-text-opacity, 1))}.text-neutral-800{--tw-text-opacity:1;color:rgb(38 38 38 / var(--tw-text-opacity, 1))}.text-neutral-900{--tw-text-opacity:1;color:rgb(23 23 23 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.accent-neutral-900{accent-color:#171717}.opacity-0{opacity:0}.opacity-100{opacity:1}.shadow-card{--tw-shadow:0 8px 24px -4px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);--tw-shadow-colored:0 8px 24px -4px var(--tw-shadow-color), 0 2px 6px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-float{--tw-shadow:0 20px 45px -10px rgba(0, 0, 0, 0.25);--tw-shadow-colored:0 20px 45px -10px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-pill{--tw-shadow:0 2px 8px rgba(0, 0, 0, 0.07);--tw-shadow-colored:0 2px 8px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-xl{--tw-backdrop-blur:blur(24px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.duration-300{transition-duration:300ms}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-neutral-400:hover{--tw-border-opacity:1;border-color:rgb(163 163 163 / var(--tw-border-opacity, 1))}.hover\:bg-black:hover{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-neutral-100:hover{--tw-bg-opacity:1;background-color:rgb(245 245 245 / var(--tw-bg-opacity, 1))}.hover\:bg-neutral-200:hover{--tw-bg-opacity:1;background-color:rgb(229 229 229 / var(--tw-bg-opacity, 1))}.hover\:bg-red-50:hover{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.hover\:bg-red-100:hover{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.hover\:text-neutral-700:hover{--tw-text-opacity:1;color:rgb(64 64 64 / var(--tw-text-opacity, 1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.hover\:text-red-700:hover{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.hover\:text-neutral-900:hover{--tw-text-opacity:1;color:rgb(23 23 23 / var(--tw-text-opacity, 1))}.hover\:shadow-card-hover:hover{--tw-shadow:0 16px 32px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);--tw-shadow-colored:0 16px 32px -4px var(--tw-shadow-color), 0 4px 12px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-emerald-700:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(4 120 87 / var(--tw-ring-opacity, 1))}.focus\:ring-neutral-900:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(23 23 23 / var(--tw-ring-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:items-center{align-items:center}.sm\:rounded-4xl{border-radius:32px}.sm\:p-4{padding:1rem}}</style></head>
-<body class="flex flex-col items-center min-h-screen px-4 pt-8 pb-32 is-admin">
+</head>
+<body class="p-4 sm:p-6 pb-28 relative flex flex-col items-center">
 
-  <!-- Background Wallpaper and Tint Layers -->
-  <div id="theme-background-layer"></div>
-  <div id="theme-overlay-layer"></div>
+  <div id="custom-bg-layer" class="fixed inset-0 pointer-events-none z-0 bg-cover bg-center transition-opacity duration-300 opacity-0"></div>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="fixed top-5 z-50 transform transition-all duration-300 max-w-sm w-[90%] mx-auto opacity-0 -translate-y-20 pointer-events-none">
-    <div id="toast-body" class="bg-neutral-900/95 text-white backdrop-blur-xl px-4 py-3 rounded-2xl shadow-float flex items-center gap-3 border border-white/10">
-      <div id="toast-icon-container" class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4"><path d="M20 6 9 17l-5-5"></path></svg></div>
-      <p id="toast-text" class="text-xs font-semibold flex-1 leading-snug">GitHub sync settings saved!</p>
-    </div>
-  </div>
+  <main class="w-full max-w-[440px] mx-auto relative z-10 flex flex-col items-center">
 
-  <!-- Mobile Screen Frame Constraint -->
-  <main class="w-full max-w-[425px] mx-auto flex flex-col items-center relative z-10">
-
-    <!-- Avatar with Hidden Triple-Tap Trigger -->
-    <div class="relative mb-3 group select-none">
-      <div id="avatar-tap-target" title="Tap 3 times to unlock Admin mode" class="w-24 h-24 rounded-full overflow-hidden shadow-card border-[3px] border-white/80 bg-neutral-200 relative cursor-pointer active:scale-95 transition-transform">
-        <img id="profile-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Profile Avatar" class="w-full h-full object-cover">
-      </div>
-      <!-- Profile photo uploader trigger (visible only in admin mode) -->
-      <label for="profile-avatar-input" title="Upload profile photo" class="admin-only-flex absolute bottom-0 right-0 bg-neutral-900 text-white p-2 rounded-full cursor-pointer shadow-md hover:scale-105 active:scale-95 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="camera" aria-hidden="true" class="lucide lucide-camera w-3.5 h-3.5"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-      </label>
-      <input type="file" id="profile-avatar-input" accept="image/*" class="hidden">
-    </div>
-
-    <!-- Display Name & Handle -->
-    <div class="text-center mb-5 w-full px-2">
-      <h1 id="profile-name" class="editable-box text-[26px] font-extrabold tracking-tight inline-block px-2.5 py-0.5 rounded-lg" contenteditable="true">Lwrabelle</h1>
-      <p id="profile-handle" class="editable-box text-xs font-semibold text-neutral-600 tracking-wide mt-0.5 inline-block px-2" contenteditable="true">@isabelle.closet</p>
-    </div>
-
-    <!-- Segmented Tab Pill Selector (Links / Shop) -->
-    <div class="w-auto mb-6">
-      <div id="pill-bar-container" class="bg-black/10 backdrop-blur-sm p-1.5 rounded-full flex items-center gap-1 shadow-inner">
-        <button id="tab-links-btn" class="px-7 py-2 rounded-full text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-all">
-          Links
-        </button>
-        <button id="tab-shop-btn" class="px-7 py-2 rounded-full text-sm font-extrabold text-neutral-900 bg-white shadow-pill transition-all">
-          Shop
+    <!-- Profile Header -->
+    <header class="w-full flex flex-col items-center text-center mt-3 mb-6 relative">
+      <div class="relative group">
+        <img id="avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
+             alt="Profile" 
+             class="w-24 h-24 rounded-full object-cover shadow-sm border-2 border-white/60 cursor-pointer select-none">
+        <button id="btn-change-avatar" class="hidden absolute bottom-0 right-0 bg-black text-white p-2 rounded-full shadow-md text-xs hover:bg-neutral-800" title="Change Photo">
+          📷
         </button>
       </div>
+
+      <h1 id="profile-name" class="text-2xl font-black mt-3 tracking-tight editable-elem" contenteditable="false">RUDRA</h1>
+      <p id="profile-handle" class="text-xs font-semibold text-neutral-600 mt-0.5 editable-elem px-2 py-0.5" contenteditable="false">@by_rudra.rajkumar</p>
+      <p id="profile-bio" class="text-xs text-neutral-700 mt-1 max-w-[320px] editable-elem" contenteditable="false">Outfits and fashion finds from my reels. Tap to shop!</p>
+
+      <nav class="flex items-center p-1 rounded-full mt-5 card-shadow" style="background-color: var(--pill-bg);" aria-label="Sections">
+        <button id="tab-links" class="px-7 py-2 rounded-full text-xs font-bold transition-all text-neutral-600 hover:text-neutral-900">Links</button>
+        <button id="tab-shop" class="px-7 py-2 rounded-full text-xs font-bold transition-all bg-white text-neutral-900 shadow-sm">Shop</button>
+      </nav>
+    </header>
+
+    <!-- Views -->
+    <div class="w-full">
+
+      <!-- Links View -->
+      <section id="view-links" class="w-full hidden space-y-3">
+        <div id="links-container" class="space-y-3 w-full"></div>
+        <button id="btn-add-link" class="hidden w-full py-3.5 rounded-3xl border-2 border-dashed border-neutral-400 font-bold text-xs text-neutral-700 hover:bg-white/40">
+          + Add New Bio Link
+        </button>
+      </section>
+
+      <!-- Shop Main View (Folders) -->
+      <section id="view-shop-folders" class="w-full space-y-4">
+        <div id="folders-container" class="space-y-4 w-full"></div>
+      </section>
+
+      <!-- Shop Subpage View (Inside Folder) -->
+      <section id="view-folder-detail" class="w-full hidden">
+        <div class="w-full flex items-center justify-between mb-4 px-1">
+          <button id="btn-back-folders" class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/80 hover:bg-white text-xs font-bold shadow-sm transition">
+            ← <span>Back to All Collections</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <button id="btn-copy-current-folder" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white text-xs font-semibold shadow-sm transition" title="Copy link to this collection">
+              🔗 <span>Share Folder</span>
+            </button>
+            <span id="detail-folder-count" class="text-[11px] font-bold uppercase tracking-wider text-neutral-600">4 Products</span>
+          </div>
+        </div>
+
+        <div class="w-full bg-white/70 backdrop-blur-md rounded-3xl p-4 shadow-sm mb-5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xl">📁</span>
+            <h2 id="detail-folder-title" class="text-base font-extrabold truncate editable-elem" contenteditable="false">Collection Name</h2>
+          </div>
+        </div>
+
+        <div id="folder-products-grid" class="grid grid-cols-2 gap-3.5 w-full"></div>
+
+        <button id="btn-add-product" class="hidden w-full mt-4 py-3.5 rounded-3xl border-2 border-dashed border-neutral-400 font-bold text-xs text-neutral-700 hover:bg-white/40">
+          + Add Item to this Collection
+        </button>
+      </section>
+
     </div>
 
-    <!-- Main Dynamic Content Container -->
-    <div id="content-outlet" class="w-full flex flex-col gap-4"><div class="flex flex-col gap-4 w-full fade-in"><div class="folder-card w-full bg-white rounded-5xl p-5 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover relative flex flex-col justify-between"><div class="w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none"><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Patrick Ta Blush Duo" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Saie Dew Blush Tint" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Glow Serum Foundation" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Hydrating Lip Oil" class="product-cutout max-h-full max-w-full object-contain">
-            </div></div><div class="w-full flex items-center justify-between pt-1">
-          <div class="flex items-center gap-2.5 truncate pr-2">
-            <div class="text-neutral-400 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="grip-vertical" aria-hidden="true" class="lucide lucide-grip-vertical w-4 h-4"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
-            </div>
-            <div class="flex flex-col text-left truncate">
-              <span class="folder-title-box editable-box font-extrabold text-neutral-900 text-[15px] tracking-tight truncate" contenteditable="true">
-                Fall Makeup Faves
-              </span>
-              <span class="text-[11px] font-semibold text-neutral-400">
-                4 Products
-              </span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <div class="admin-only-flex flex items-center gap-1">
-              <label class="p-2 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl cursor-pointer text-neutral-700 shadow-sm transition" title="Add Image from Gallery">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="image-plus" aria-hidden="true" class="lucide lucide-image-plus w-3.5 h-3.5"><path d="M16 5h6"></path><path d="M19 2v6"></path><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"></path><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path><circle cx="9" cy="9" r="2"></circle></svg>
-                <input type="file" accept="image/*" class="hidden folder-gallery-input">
-              </label>
-              <button class="btn-folder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Collection">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-3.5 h-3.5"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-            <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-4 h-4"><path d="m9 18 6-6-6-6"></path></svg>
-            </div>
-          </div>
-        </div></div><div class="folder-card w-full bg-white rounded-5xl p-5 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover relative flex flex-col justify-between"><div class="w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none"><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Cable Knit Turtleneck" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Straight Leg Chino Trousers" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Retro Court Sneakers" class="product-cutout max-h-full max-w-full object-contain">
-            </div><div class="h-28 w-20 flex-shrink-0 flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&amp;fit=crop&amp;w=400&amp;q=80" alt="Classic Silver Analog Watch" class="product-cutout max-h-full max-w-full object-contain">
-            </div></div><div class="w-full flex items-center justify-between pt-1">
-          <div class="flex items-center gap-2.5 truncate pr-2">
-            <div class="text-neutral-400 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="grip-vertical" aria-hidden="true" class="lucide lucide-grip-vertical w-4 h-4"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
-            </div>
-            <div class="flex flex-col text-left truncate">
-              <span class="folder-title-box editable-box font-extrabold text-neutral-900 text-[15px] tracking-tight truncate" contenteditable="true">
-                Cozy Sweaters &amp; Knits
-              </span>
-              <span class="text-[11px] font-semibold text-neutral-400">
-                4 Products
-              </span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <div class="admin-only-flex flex items-center gap-1">
-              <label class="p-2 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl cursor-pointer text-neutral-700 shadow-sm transition" title="Add Image from Gallery">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="image-plus" aria-hidden="true" class="lucide lucide-image-plus w-3.5 h-3.5"><path d="M16 5h6"></path><path d="M19 2v6"></path><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"></path><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path><circle cx="9" cy="9" r="2"></circle></svg>
-                <input type="file" accept="image/*" class="hidden folder-gallery-input">
-              </label>
-              <button class="btn-folder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Collection">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-3.5 h-3.5"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-            <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-4 h-4"><path d="m9 18 6-6-6-6"></path></svg>
-            </div>
-          </div>
-        </div></div></div></div>
-
-    <!-- Clean Affiliate Disclaimer Footer (Zero Linktree Branding) -->
-    <footer class="mt-12 text-center px-4 w-full">
-      <p id="affiliate-disclaimer" class="editable-box text-[11px] text-neutral-600 font-medium inline-block leading-relaxed" contenteditable="false">
-        As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you.
-      </p>
+    <!-- Disclosure -->
+    <footer class="mt-12 text-center text-[10px] text-neutral-500 max-w-[320px] leading-relaxed">
+      <p id="affiliate-disclosure" class="editable-elem" contenteditable="false">As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you.</p>
     </footer>
 
   </main>
 
-  <!-- Admin Floating Dock (Hidden by default, shown ONLY after unlocking with PIN) -->
-  <div id="admin-dock" class="fixed bottom-4 inset-x-0 mx-auto max-w-[430px] px-3 z-40">
-    <div class="bg-white/95 backdrop-blur-xl border border-neutral-200/90 shadow-float rounded-3xl p-3 flex flex-col gap-2 transition">
-      <div class="flex items-center justify-between px-2 pt-0.5">
-        <span class="text-[11px] font-bold tracking-wider uppercase text-emerald-800 flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Admin Active
-        </span>
-        <div class="flex items-center gap-2">
-          <button id="btn-dock-publish" class="text-[11px] font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded-full transition flex items-center gap-1.5 shadow-sm active:scale-95 opacity-75" disabled="">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="upload-cloud" aria-hidden="true" class="lucide lucide-upload-cloud w-3.5 h-3.5"><path d="M12 13v8"></path><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4-4 4 4"></path></svg>
-            <span id="btn-publish-label">Publishing...</span>
-          </button>
-          <button id="btn-lock-exit" class="text-[11px] font-bold text-neutral-500 hover:text-red-600 bg-neutral-100 hover:bg-red-50 px-2.5 py-1 rounded-full transition flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-3 h-3"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span>Lock</span>
-          </button>
-        </div>
-      </div>
-      <div class="grid grid-cols-6 gap-1 pt-1">
-        <button id="btn-dock-folder" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="folder-plus" aria-hidden="true" class="lucide lucide-folder-plus w-3.5 h-3.5"><path d="M12 10v6"></path><path d="M9 13h6"></path><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
-          <span>+ Folder</span>
+  <!-- Admin Bar -->
+  <div id="admin-bar" class="hidden fixed bottom-4 inset-x-4 max-w-[460px] mx-auto bg-white/95 backdrop-blur-md rounded-3xl dock-shadow p-3 z-50 border border-neutral-200">
+    <div class="flex items-center justify-between pb-2 mb-2 border-b border-neutral-100 text-[11px] font-bold text-neutral-700">
+      <span class="flex items-center gap-1.5 text-green-700">
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        ADMIN ACTIVE
+      </span>
+      <div class="flex items-center gap-1.5">
+        <button id="btn-dock-publish" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-full shadow-sm flex items-center gap-1 transition">
+          ☁️ <span id="publish-text">Publish Live</span>
         </button>
-        <button id="btn-dock-product" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="tag" aria-hidden="true" class="lucide lucide-tag w-3.5 h-3.5"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-          <span>+ Product</span>
-        </button>
-        <button id="btn-dock-theme" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="palette" aria-hidden="true" class="lucide lucide-palette w-3.5 h-3.5 text-indigo-600"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-          <span>Theme</span>
-        </button>
-        <button id="btn-dock-sync" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <i data-lucide="github" class="w-3.5 h-3.5 text-neutral-800"></i>
-          <span>GitHub</span>
-        </button>
-        <button id="btn-dock-pin" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="key-round" aria-hidden="true" class="lucide lucide-key-round w-3.5 h-3.5 text-amber-600"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-          <span>PIN</span>
-        </button>
-        <button id="btn-dock-download" class="py-2 px-1 text-[10px] font-bold bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" aria-hidden="true" class="lucide lucide-download w-3.5 h-3.5 text-emerald-700"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
-          <span>Export</span>
+        <button id="btn-dock-lock" class="bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-2.5 py-1 rounded-full transition">
+          🔒 Lock
         </button>
       </div>
     </div>
-  </div>
-
-  <!-- Secret PIN Verification Modal -->
-  <div id="pin-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-xs rounded-4xl p-6 shadow-float flex flex-col items-center text-center gap-4 fade-in">
-      <div class="w-12 h-12 bg-neutral-100 text-neutral-900 rounded-2xl flex items-center justify-center shadow-inner">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-      </div>
-      <div>
-        <h3 class="font-extrabold text-neutral-900 text-base">Storefront Admin Lock</h3>
-        <p class="text-xs text-neutral-500 mt-1">Enter your 4-digit security PIN to unlock editing mode.</p>
-      </div>
-      <div class="w-full">
-        <input type="password" id="pin-input" maxlength="8" inputmode="numeric" class="w-full text-center tracking-[0.3em] font-mono text-xl py-3 px-4 border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-neutral-900 transition" placeholder="••••">
-        <p id="pin-error-msg" class="text-[11px] font-bold text-red-600 mt-2 hidden">Incorrect PIN. Try again.</p>
-        <p class="text-[10px] text-neutral-400 mt-2 font-mono">Default PIN: 1234</p>
-      </div>
-      <div class="flex gap-2 w-full pt-1">
-        <button id="btn-pin-cancel" class="flex-1 py-3 text-xs font-bold text-neutral-600 hover:bg-neutral-100 rounded-2xl transition">
-          Cancel
-        </button>
-        <button id="btn-pin-submit" class="flex-1 py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
-          Unlock
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- GitHub Settings Modal -->
-  <div id="github-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-sm rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in max-h-[90vh] overflow-y-auto no-scrollbar">
-      <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="p-2 bg-neutral-900 text-white rounded-xl">
-            <i data-lucide="github" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-neutral-900 text-sm">GitHub Sync Settings</h3>
-            <span class="text-[10px] text-neutral-500">100% Free 1-Click Publishing</span>
-          </div>
-        </div>
-        <button id="btn-close-gh-modal" class="text-neutral-400 hover:text-neutral-700 p-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-4 h-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-        </button>
-      </div>
-
-      <div class="text-[11px] text-neutral-600 bg-neutral-50 p-3 rounded-2xl border border-neutral-200/80 leading-relaxed">
-        Save your GitHub details once. Your Personal Access Token (PAT) stays encrypted inside your browser's private local storage.
-      </div>
-
-      <div class="flex flex-col gap-2.5">
-        <div>
-          <label class="text-[11px] font-bold text-neutral-700 block mb-1">GitHub Username</label>
-          <input type="text" id="gh-owner" placeholder="e.g. rudrarajkumar" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
-        </div>
-
-        <div>
-          <label class="text-[11px] font-bold text-neutral-700 block mb-1">Repository Name</label>
-          <input type="text" id="gh-repo" placeholder="e.g. closet" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-[11px] font-bold text-neutral-700 block mb-1">Branch</label>
-            <input type="text" id="gh-branch" value="main" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
-          </div>
-          <div>
-            <label class="text-[11px] font-bold text-neutral-700 block mb-1">File Path</label>
-            <input type="text" id="gh-path" value="index.html" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900">
-          </div>
-        </div>
-
-        <div>
-          <label class="text-[11px] font-bold text-neutral-700 block mb-1">Personal Access Token (PAT)</label>
-          <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full text-xs py-2.5 px-3 border border-neutral-300 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900">
-          <p class="text-[10px] text-neutral-400 mt-1">Requires classic token with <span class="font-bold text-neutral-700">repo</span> permission checked.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-2 pt-2">
-        <button id="btn-save-gh-settings" class="w-full py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
-          Save Settings
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Change PIN Modal -->
-  <div id="change-pin-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-xs rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in">
-      <div class="flex items-center justify-between">
-        <h3 class="font-extrabold text-neutral-900 text-base flex items-center gap-1.5">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="key-round" aria-hidden="true" class="lucide lucide-key-round w-4 h-4 text-amber-600"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-          Change Admin PIN
-        </h3>
-        <button id="btn-close-changepin" class="text-neutral-400 hover:text-neutral-700 p-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-4 h-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-        </button>
-      </div>
-      <div>
-        <label class="text-xs font-semibold text-neutral-600 block mb-1">New 4-digit PIN:</label>
-        <input type="password" id="new-pin-input" maxlength="8" inputmode="numeric" class="w-full text-center tracking-[0.3em] font-mono text-lg py-2.5 px-4 border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-neutral-900" placeholder="••••">
-      </div>
-      <button id="btn-save-new-pin" class="w-full py-3 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
-        Update PIN
+    
+    <div class="grid grid-cols-6 gap-1.5 text-[10px] font-bold text-neutral-700 text-center">
+      <button id="btn-dock-folder" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        📁<span>+ Folder</span>
+      </button>
+      <button id="btn-dock-product" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        🏷️<span>+ Item</span>
+      </button>
+      <button id="btn-dock-theme" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        🎨<span>Theme</span>
+      </button>
+      <button id="btn-dock-github" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        ⚙️<span>GitHub</span>
+      </button>
+      <button id="btn-dock-pin" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        🔑<span>PIN</span>
+      </button>
+      <button id="btn-dock-export" class="p-2 rounded-xl bg-neutral-50 hover:bg-neutral-100 flex flex-col items-center">
+        💾<span>Export</span>
       </button>
     </div>
   </div>
 
-  <!-- General URL / Text Edit Modal -->
-  <div id="general-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-4xl p-6 shadow-float flex flex-col gap-4 fade-in">
-      <div class="flex items-center justify-between">
-        <h3 id="modal-heading" class="font-extrabold text-neutral-900 text-base">Edit Details</h3>
-        <button id="modal-btn-close" class="text-neutral-400 hover:text-neutral-700 p-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-4 h-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-        </button>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label id="modal-label" class="text-xs font-semibold text-neutral-600">Destination URL:</label>
-        <input type="text" id="modal-input" class="w-full px-4 py-3 text-sm border border-neutral-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-700 font-sans" placeholder="https://...">
-      </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button id="modal-btn-cancel" class="px-4 py-2.5 text-xs font-bold text-neutral-600 hover:bg-neutral-100 rounded-2xl transition">
-          Cancel
-        </button>
-        <button id="modal-btn-submit" class="px-5 py-2.5 text-xs font-bold bg-neutral-900 hover:bg-black text-white rounded-2xl shadow-sm transition">
-          Save Changes
-        </button>
-      </div>
+  <input type="file" id="generic-file-input" accept="image/*" class="hidden">
+
+  <!-- Theme Modal -->
+  <dialog id="theme-modal" class="rounded-3xl p-5 max-w-[380px] w-full backdrop:bg-black/40 card-shadow border-0">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-extrabold text-sm">Customize Theme</h3>
+      <button onclick="document.getElementById('theme-modal').close()" class="text-neutral-400 hover:text-black font-bold">✕</button>
     </div>
-  </div>
-
-  <!-- Theme Drawer Modal -->
-  <div id="theme-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-t-[36px] sm:rounded-4xl p-6 shadow-float flex flex-col gap-5 fade-in">
-      <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
-        <div class="flex items-center gap-2">
-          <div class="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="palette" aria-hidden="true" class="lucide lucide-palette w-4 h-4"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-          </div>
-          <h3 class="font-extrabold text-neutral-900 text-base">Customize Storefront Theme</h3>
-        </div>
-        <button id="theme-modal-close" class="text-neutral-400 hover:text-neutral-700 p-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-        </button>
-      </div>
-
-      <!-- Presets -->
+    <div class="space-y-4 text-xs">
       <div>
-        <label class="text-xs font-extrabold uppercase tracking-wider text-neutral-500 mb-2.5 block">Preset Palettes</label>
-        <div class="grid grid-cols-2 gap-2" id="preset-themes-grid"><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #d7e8cb;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Sage Green (Default)</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #e8dcf7;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Lavender Dream</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #f4efe6;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Oat Milk Minimal</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #121316;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Midnight Noir</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #fed7aa;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Sunset Peach</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #fce7f3;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Rose Pink</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #dbeafe;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Sky Mist</span>
-        </button><button class="flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group">
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: #b8d8be;"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">Matcha Forest</span>
-        </button></div>
-      </div>
-
-      <!-- Custom Solid Color -->
-      <div class="bg-neutral-50 p-4 rounded-3xl border border-neutral-200/80">
-        <label class="text-xs font-bold text-neutral-800 mb-2 block flex items-center justify-between">
-          <span>Custom Solid Color</span>
-          <span id="custom-hex-label" class="text-[11px] font-mono text-neutral-500">#d7e8cb</span>
-        </label>
-        <div class="flex items-center gap-3">
-          <input type="color" id="theme-color-picker" class="w-12 h-10 rounded-xl border-none cursor-pointer bg-transparent">
-          <span class="text-xs text-neutral-500">Pick any custom shade instantly</span>
+        <label class="font-bold text-neutral-600 block mb-2">Preset Colors</label>
+        <div class="grid grid-cols-4 gap-2 text-[11px] text-center font-semibold">
+          <button onclick="setThemePreset('#d7e8cb', '#c5dcba')" class="p-2 rounded-xl border" style="background:#d7e8cb;">Sage</button>
+          <button onclick="setThemePreset('#e8dcf7', '#dac7f3')" class="p-2 rounded-xl border" style="background:#e8dcf7;">Lavender</button>
+          <button onclick="setThemePreset('#f4efe6', '#e5dcce')" class="p-2 rounded-xl border" style="background:#f4efe6;">Oat</button>
+          <button onclick="setThemePreset('#fed7aa', '#fdba74')" class="p-2 rounded-xl border" style="background:#fed7aa;">Peach</button>
         </div>
-      </div>
-
-      <!-- Custom Wallpaper Upload -->
-      <div class="bg-neutral-50 p-4 rounded-3xl border border-neutral-200/80 flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-xs font-bold text-neutral-800 block">Upload Gallery Photo</span>
-            <span class="text-[11px] text-neutral-500">Custom wallpaper from camera roll</span>
-          </div>
-          <label class="px-3.5 py-2 bg-neutral-900 hover:bg-black text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition">
-            Browse
-            <input type="file" id="theme-bg-file" accept="image/*" class="hidden">
-          </label>
-        </div>
-
-        <div id="theme-bg-controls" class="flex flex-col gap-3 pt-2 border-t border-neutral-200/70">
-          <div>
-            <div class="flex justify-between text-[11px] font-bold text-neutral-600 mb-1">
-              <span>Dark Overlay Tint</span>
-              <span id="overlay-val-text">12%</span>
-            </div>
-            <input type="range" id="theme-overlay-slider" min="0" max="80" value="12" class="w-full accent-neutral-900 cursor-pointer">
-          </div>
-          <div>
-            <div class="flex justify-between text-[11px] font-bold text-neutral-600 mb-1">
-              <span>Background Blur</span>
-              <span id="blur-val-text">0px</span>
-            </div>
-            <input type="range" id="theme-blur-slider" min="0" max="25" value="0" class="w-full accent-neutral-900 cursor-pointer">
-          </div>
-          <button id="btn-remove-bg-image" class="text-[11px] font-bold text-red-600 hover:text-red-700 self-start">
-            Remove background photo
-          </button>
-        </div>
-      </div>
-
-      <div class="flex justify-end pt-1">
-        <button id="theme-modal-apply" class="w-full py-3 bg-neutral-900 hover:bg-black text-white text-xs font-bold rounded-2xl shadow-sm transition">
-          Done &amp; Apply
-        </button>
       </div>
     </div>
+  </dialog>
+
+  <!-- GitHub Modal -->
+  <dialog id="github-modal" class="rounded-3xl p-5 max-w-[380px] w-full backdrop:bg-black/40 card-shadow border-0">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-extrabold text-sm">GitHub 1-Click Sync</h3>
+      <button onclick="document.getElementById('github-modal').close()" class="text-neutral-400 hover:text-black font-bold">✕</button>
+    </div>
+    <form id="github-form" class="space-y-2.5 text-xs">
+      <div>
+        <label class="font-bold text-neutral-600 block mb-0.5">GitHub Username</label>
+        <input id="gh-user" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" placeholder="rudrarajkumar" required>
+      </div>
+      <div>
+        <label class="font-bold text-neutral-600 block mb-0.5">Repository Name</label>
+        <input id="gh-repo" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" placeholder="closet" required>
+      </div>
+      <div>
+        <label class="font-bold text-neutral-600 block mb-0.5">Branch</label>
+        <input id="gh-branch" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" value="main" required>
+      </div>
+      <div>
+        <label class="font-bold text-neutral-600 block mb-0.5">File Path</label>
+        <input id="gh-path" type="text" class="w-full p-2.5 rounded-xl border bg-neutral-50" value="index.html" required>
+      </div>
+      <div>
+        <label class="font-bold text-neutral-600 block mb-0.5">Personal Access Token (classic)</label>
+        <input id="gh-token" type="password" class="w-full p-2.5 rounded-xl border bg-neutral-50 font-mono text-[11px]" placeholder="ghp_..." required>
+      </div>
+      <button type="submit" class="w-full py-2.5 bg-black text-white font-bold rounded-xl mt-2 hover:bg-neutral-800">
+        Save GitHub Settings
+      </button>
+    </form>
+  </dialog>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-5 z-50 bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg transition-all transform -translate-y-16 pointer-events-none opacity-0">
+    Link copied!
   </div>
 
   <script>
-    const PRESET_THEMES = [
-      { id: 'sage', name: 'Sage Green (Default)', bgColor: '#d7e8cb', textColor: '#111827', subtextColor: '#4b5563', isDark: false },
-      { id: 'lavender', name: 'Lavender Dream', bgColor: '#e8dcf7', textColor: '#1f132e', subtextColor: '#57466e', isDark: false },
-      { id: 'cream', name: 'Oat Milk Minimal', bgColor: '#f4efe6', textColor: '#27231f', subtextColor: '#635b54', isDark: false },
-      { id: 'noir', name: 'Midnight Noir', bgColor: '#121316', textColor: '#f9fafb', subtextColor: '#9ca3af', isDark: true },
-      { id: 'peach', name: 'Sunset Peach', bgColor: '#fed7aa', textColor: '#291708', subtextColor: '#6d4c2b', isDark: false },
-      { id: 'rose', name: 'Rose Pink', bgColor: '#fce7f3', textColor: '#371427', subtextColor: '#70425b', isDark: false },
-      { id: 'sky', name: 'Sky Mist', bgColor: '#dbeafe', textColor: '#0f172a', subtextColor: '#475569', isDark: false },
-      { id: 'matcha', name: 'Matcha Forest', bgColor: '#b8d8be', textColor: '#0f2916', subtextColor: '#36533f', isDark: false }
-    ];
+    const STORAGE_KEY = 'closet_data_store_v3';
+    const GITHUB_KEY = 'closet_gh_config_v1';
+    const PIN_KEY = 'closet_admin_pin_v1';
 
-    // Master Storefront State
-    let state = {
-  "isAdmin": false,
-  "adminPin": "1234",
-  "activeTab": "shop",
-  "currentFolderId": null,
-  "theme": {
-    "presetId": "sage",
-    "bgColor": "#d7e8cb",
-    "bgImage": "",
-    "overlayOpacity": 0.12,
-    "blur": 0,
-    "textColor": "#111827",
-    "subtextColor": "#4b5563",
-    "isDark": false
-  },
-  "profile": {
-    "name": "Lwrabelle",
-    "handle": "@isabelle.closet",
-    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    "bio": "Curated fashion staples, capsule wardrobes & daily essentials."
-  },
-  "links": [
-    {
-      "id": "lnk-1",
-      "title": "Follow on Instagram",
-      "url": "https://instagram.com"
-    },
-    {
-      "id": "lnk-2",
-      "title": "TikTok Lookbooks & Fits",
-      "url": "https://tiktok.com"
-    },
-    {
-      "id": "lnk-3",
-      "title": "My YouTube Channel",
-      "url": "https://youtube.com"
-    }
-  ],
-  "folders": [
-    {
-      "id": "folder-fall-makeup",
-      "title": "Fall Makeup Faves",
-      "products": [
+    const defaultData = {
+      profile: {
+        name: "RUDRA",
+        handle: "@by_rudra.rajkumar",
+        bio: "Outfits and fashion finds from my reels. Tap to shop!",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+        disclosure: "As an associate I earn from qualifying purchases. Links above are affiliate links at no extra cost to you."
+      },
+      theme: {
+        bgColor: "#d7e8cb",
+        pillColor: "#c5dcba",
+        wallpaper: "",
+        isDark: false
+      },
+      folders: [
         {
-          "id": "prod-1",
-          "title": "Patrick Ta Blush Duo",
-          "price": "$38.00",
-          "image": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-2",
-          "title": "Saie Dew Blush Tint",
-          "price": "$25.00",
-          "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-3",
-          "title": "Glow Serum Foundation",
-          "price": "$42.00",
-          "image": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-4",
-          "title": "Hydrating Lip Oil",
-          "price": "$24.00",
-          "image": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        }
-      ]
-    },
-    {
-      "id": "folder-cozy-knits",
-      "title": "Cozy Sweaters & Knits",
-      "products": [
-        {
-          "id": "prod-5",
-          "title": "Cable Knit Turtleneck",
-          "price": "$59.00",
-          "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-6",
-          "title": "Straight Leg Chino Trousers",
-          "price": "$68.00",
-          "image": "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-7",
-          "title": "Retro Court Sneakers",
-          "price": "$89.00",
-          "image": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        },
-        {
-          "id": "prod-8",
-          "title": "Classic Silver Analog Watch",
-          "price": "$110.00",
-          "image": "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=400&q=80",
-          "link": "https://amazon.com"
-        }
-      ]
-    }
-  ]
-};
-
-    // Toast Utility
-    function showToast(message, isError = false) {
-      const toast = document.getElementById('toast');
-      const toastText = document.getElementById('toast-text');
-      const toastIcon = document.getElementById('toast-icon-container');
-
-      toastText.innerText = message;
-      if (isError) {
-        toastIcon.className = "w-6 h-6 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0";
-        toastIcon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i>`;
-      } else {
-        toastIcon.className = "w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0";
-        toastIcon.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
-      }
-      lucide.createIcons();
-
-      toast.classList.remove('opacity-0', '-translate-y-20', 'pointer-events-none');
-      toast.classList.add('opacity-100', 'translate-y-0');
-
-      setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', '-translate-y-20', 'pointer-events-none');
-      }, 3500);
-    }
-
-    // Apply Dynamic Theme Styles
-    function applyThemeStyles() {
-      const root = document.documentElement;
-      root.style.setProperty('--bg-color', state.theme.bgColor);
-      root.style.setProperty('--text-color', state.theme.textColor);
-      root.style.setProperty('--subtext-color', state.theme.subtextColor);
-      root.style.setProperty('--bg-blur', (state.theme.blur || 0) + 'px');
-      root.style.setProperty('--bg-overlay-opacity', state.theme.overlayOpacity ?? 0.12);
-
-      if (state.theme.bgImage) {
-        root.style.setProperty('--bg-image', `url(${state.theme.bgImage})`);
-      } else {
-        root.style.setProperty('--bg-image', 'none');
-      }
-
-      if (state.theme.isDark) {
-        root.style.setProperty('--card-bg', 'rgba(28, 30, 36, 0.95)');
-        root.style.setProperty('--card-border', 'rgba(255, 255, 255, 0.08)');
-      } else {
-        root.style.setProperty('--card-bg', '#ffffff');
-        root.style.setProperty('--card-border', 'rgba(255, 255, 255, 0.85)');
-      }
-    }
-
-    // Modal Helper
-    let onModalSubmitCallback = null;
-    function openModal(heading, label, initialValue, onSubmit) {
-      document.getElementById('modal-heading').innerText = heading;
-      document.getElementById('modal-label').innerText = label;
-      const input = document.getElementById('modal-input');
-      input.value = initialValue || '';
-      onModalSubmitCallback = onSubmit;
-      document.getElementById('general-modal').classList.remove('hidden');
-      input.focus();
-    }
-    function closeModal() {
-      document.getElementById('general-modal').classList.add('hidden');
-      onModalSubmitCallback = null;
-    }
-    document.getElementById('modal-btn-close').onclick = closeModal;
-    document.getElementById('modal-btn-cancel').onclick = closeModal;
-    document.getElementById('modal-btn-submit').onclick = () => {
-      const val = document.getElementById('modal-input').value.trim();
-      if (onModalSubmitCallback) onModalSubmitCallback(val);
-      closeModal();
-    };
-
-    function readDeviceImage(file, callback) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => callback(e.target.result);
-      reader.readAsDataURL(file);
-    }
-
-    // Render Master View
-    function render() {
-      applyThemeStyles();
-
-      // Admin Mode Classes & Controls
-      if (state.isAdmin) {
-        document.body.classList.add('is-admin');
-        document.getElementById('admin-dock').classList.remove('hidden');
-      } else {
-        document.body.classList.remove('is-admin');
-        document.getElementById('admin-dock').classList.add('hidden');
-      }
-
-      // Sync Profile UI Elements
-      document.getElementById('profile-name').innerText = state.profile.name;
-      document.getElementById('profile-handle').innerText = state.profile.handle;
-      document.getElementById('profile-img').src = state.profile.avatar;
-
-      // Enable text editing ONLY when in Admin mode
-      document.getElementById('profile-name').contentEditable = state.isAdmin ? "true" : "false";
-      document.getElementById('profile-handle').contentEditable = state.isAdmin ? "true" : "false";
-
-      // Segmented Pill Buttons
-      const tabLinksBtn = document.getElementById('tab-links-btn');
-      const tabShopBtn = document.getElementById('tab-shop-btn');
-      if (state.activeTab === 'shop') {
-        tabShopBtn.className = "px-7 py-2 rounded-full text-sm font-extrabold text-neutral-900 bg-white shadow-pill transition-all";
-        tabLinksBtn.className = "px-7 py-2 rounded-full text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-all";
-      } else {
-        tabLinksBtn.className = "px-7 py-2 rounded-full text-sm font-extrabold text-neutral-900 bg-white shadow-pill transition-all";
-        tabShopBtn.className = "px-7 py-2 rounded-full text-sm font-semibold text-neutral-700 hover:text-neutral-900 transition-all";
-      }
-
-      // Outlet Injection
-      const outlet = document.getElementById('content-outlet');
-      outlet.innerHTML = "";
-
-      if (state.activeTab === 'links') {
-        renderLinksTab(outlet);
-      } else if (state.currentFolderId) {
-        renderSubpageView(outlet);
-      } else {
-        renderCollectionsTab(outlet);
-      }
-
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-    }
-
-    // View: Links Tab
-    function renderLinksTab(outlet) {
-      const container = document.createElement('div');
-      container.className = "flex flex-col gap-3 w-full fade-in";
-
-      state.links.forEach((linkItem, idx) => {
-        const item = document.createElement('div');
-        item.className = "w-full bg-white rounded-3xl p-4 shadow-card flex items-center justify-between border border-white/80 transition hover:shadow-card-hover";
-        item.innerHTML = `
-          <a href="${linkItem.url}" target="_blank" rel="noopener noreferrer" class="font-extrabold text-neutral-900 text-sm flex-1 text-center truncate px-2">
-            ${linkItem.title}
-          </a>
-          <div class="admin-only-flex flex items-center gap-1.5 flex-shrink-0">
-            <button class="btn-edit-url p-1.5 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl text-neutral-700" title="Edit Link Destination">
-              <i data-lucide="link" class="w-3.5 h-3.5"></i>
-            </button>
-            <button class="btn-del-link p-1.5 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600" title="Delete Link">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        `;
-
-        item.querySelector('.btn-edit-url').onclick = (e) => {
-          e.stopPropagation();
-          openModal("Edit Bio Link", "Web Address URL:", linkItem.url, (newUrl) => {
-            linkItem.url = newUrl;
-            render();
-          });
-        };
-
-        item.querySelector('.btn-del-link').onclick = (e) => {
-          e.stopPropagation();
-          state.links.splice(idx, 1);
-          render();
-        };
-
-        container.appendChild(item);
-      });
-
-      if (state.isAdmin) {
-        const addBtn = document.createElement('button');
-        addBtn.className = "w-full py-4 border-2 border-dashed border-neutral-400/80 rounded-3xl text-xs font-extrabold text-neutral-700 hover:bg-white/40 transition flex items-center justify-center gap-2";
-        addBtn.innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i><span>Add New Custom Bio Link</span>`;
-        addBtn.onclick = () => {
-          state.links.push({
-            id: 'lnk-' + Date.now(),
-            title: "New Featured Link",
-            url: "https://"
-          });
-          render();
-        };
-        container.appendChild(addBtn);
-      }
-
-      outlet.appendChild(container);
-    }
-
-    // View: Main Shop Collections
-    function renderCollectionsTab(outlet) {
-      const container = document.createElement('div');
-      container.className = "flex flex-col gap-4 w-full fade-in";
-
-      state.folders.forEach((folder, fIndex) => {
-        const card = document.createElement('div');
-        card.className = "folder-card w-full bg-white rounded-5xl p-5 shadow-card border border-white/90 cursor-pointer transition-all duration-300 hover:shadow-card-hover relative flex flex-col justify-between";
-
-        // Cutout Products Showcase Row (Up to 4 images)
-        const showcase = document.createElement('div');
-        showcase.className = "w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none";
-
-        const previewSlice = folder.products.slice(0, 4);
-        if (previewSlice.length === 0) {
-          showcase.innerHTML = `
-            <div class="text-xs text-neutral-400 font-bold flex flex-col items-center gap-1.5">
-              <i data-lucide="shopping-bag" class="w-6 h-6 text-neutral-300"></i>
-              <span>Empty collection</span>
-            </div>
-          `;
-        } else {
-          previewSlice.forEach(p => {
-            const imgBox = document.createElement('div');
-            imgBox.className = "h-28 w-20 flex-shrink-0 flex items-center justify-center";
-            imgBox.innerHTML = `
-              <img src="${p.image}" alt="${p.title}" class="product-cutout max-h-full max-w-full object-contain">
-            `;
-            showcase.appendChild(imgBox);
-          });
-        }
-
-        // Folder Title, Counter & Action Controls
-        const footer = document.createElement('div');
-        footer.className = "w-full flex items-center justify-between pt-1";
-        footer.innerHTML = `
-          <div class="flex items-center gap-2.5 truncate pr-2">
-            <div class="text-neutral-400 flex items-center justify-center">
-              <i data-lucide="grip-vertical" class="w-4 h-4"></i>
-            </div>
-            <div class="flex flex-col text-left truncate">
-              <span class="folder-title-box editable-box font-extrabold text-neutral-900 text-[15px] tracking-tight truncate" contenteditable="${state.isAdmin}">
-                ${folder.title}
-              </span>
-              <span class="text-[11px] font-semibold text-neutral-400">
-                ${folder.products.length} Products
-              </span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <div class="admin-only-flex flex items-center gap-1">
-              <label class="p-2 text-xs bg-neutral-100 hover:bg-neutral-200 rounded-xl cursor-pointer text-neutral-700 shadow-sm transition" title="Add Image from Gallery">
-                <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
-                <input type="file" accept="image/*" class="hidden folder-gallery-input">
-              </label>
-              <button class="btn-folder-delete p-2 text-xs bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition" title="Delete Collection">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-            <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 font-bold ml-1">
-              <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </div>
-          </div>
-        `;
-
-        card.onclick = (e) => {
-          if (e.target.closest('.admin-only-flex') || e.target.classList.contains('folder-title-box')) return;
-          state.currentFolderId = folder.id;
-          render();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        footer.querySelector('.folder-title-box').addEventListener('blur', (e) => {
-          folder.title = e.target.innerText.trim() || "Untitled Folder";
-        });
-
-        footer.querySelector('.folder-gallery-input').addEventListener('change', (e) => {
-          readDeviceImage(e.target.files[0], (dataUri) => {
-            folder.products.push({
-              id: 'prod-' + Date.now(),
-              title: "New Pick",
-              price: "$29.00",
-              image: dataUri,
-              link: "https://amazon.com"
-            });
-            render();
-          });
-        });
-
-        footer.querySelector('.btn-folder-delete').addEventListener('click', (e) => {
-          e.stopPropagation();
-          state.folders.splice(fIndex, 1);
-          render();
-        });
-
-        card.appendChild(showcase);
-        card.appendChild(footer);
-        container.appendChild(card);
-      });
-
-      outlet.appendChild(container);
-    }
-
-    // View: Dedicated Subpage View for a Folder
-    function renderSubpageView(outlet) {
-      const folder = state.folders.find(f => f.id === state.currentFolderId);
-      if (!folder) {
-        state.currentFolderId = null;
-        render();
-        return;
-      }
-
-      const subpage = document.createElement('div');
-      subpage.className = "flex flex-col gap-4 w-full fade-in";
-
-      // Navigation Header Bar
-      const navHeader = document.createElement('div');
-      navHeader.className = "flex items-center justify-between w-full pb-1";
-      navHeader.innerHTML = `
-        <button id="btn-back-folders" class="flex items-center gap-1.5 text-xs font-extrabold text-neutral-900 bg-white/90 hover:bg-white px-4 py-2.5 rounded-full shadow-card backdrop-blur transition active:scale-95">
-          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-          <span>Back to All Collections</span>
-        </button>
-        <span class="text-xs font-bold text-neutral-700 tracking-wider uppercase px-2">
-          ${folder.products.length} Products
-        </span>
-      `;
-      navHeader.querySelector('#btn-back-folders').onclick = () => {
-        state.currentFolderId = null;
-        render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-
-      // Header Banner
-      const headerCard = document.createElement('div');
-      headerCard.className = "bg-white rounded-4xl p-4 shadow-card border border-white flex items-center justify-between";
-      headerCard.innerHTML = `
-        <div class="flex items-center gap-2 truncate pr-2">
-          <i data-lucide="folder" class="w-5 h-5 text-neutral-800 flex-shrink-0"></i>
-          <h2 class="subpage-title editable-box font-extrabold text-neutral-900 text-lg tracking-tight truncate" contenteditable="${state.isAdmin}">
-            ${folder.title}
-          </h2>
-        </div>
-        <div class="admin-only-flex flex gap-1">
-          <label class="cursor-pointer bg-neutral-900 text-white text-xs font-bold px-3 py-2 rounded-2xl shadow-sm hover:bg-black transition flex items-center gap-1.5">
-            <i data-lucide="image-plus" class="w-3.5 h-3.5"></i>
-            <span>Upload Photo</span>
-            <input type="file" accept="image/*" class="hidden subpage-photo-input">
-          </label>
-        </div>
-      `;
-
-      headerCard.querySelector('.subpage-title').addEventListener('blur', (e) => {
-        folder.title = e.target.innerText.trim() || "Untitled Folder";
-      });
-
-      headerCard.querySelector('.subpage-photo-input').addEventListener('change', (e) => {
-        readDeviceImage(e.target.files[0], (base64) => {
-          folder.products.push({
-            id: 'prod-' + Date.now(),
-            title: "New Outfit Item",
-            price: "$34.00",
-            image: base64,
-            link: "https://amazon.com"
-          });
-          render();
-        });
-      });
-
-      subpage.appendChild(navHeader);
-      subpage.appendChild(headerCard);
-
-      // Two Column Grid
-      const productGrid = document.createElement('div');
-      productGrid.className = "grid grid-cols-2 gap-3.5 w-full pt-1";
-
-      if (folder.products.length === 0) {
-        const emptyAlert = document.createElement('div');
-        emptyAlert.className = "col-span-2 bg-white/70 rounded-4xl p-8 text-center text-xs font-bold text-neutral-600";
-        emptyAlert.innerText = "No products here yet.";
-        productGrid.appendChild(emptyAlert);
-      }
-
-      folder.products.forEach((prod, pIndex) => {
-        const itemCard = document.createElement('div');
-        itemCard.className = "bg-white rounded-4xl p-3 shadow-card border border-white flex flex-col justify-between transition hover:shadow-card-hover relative group";
-
-        itemCard.innerHTML = `
-          <div class="relative w-full aspect-square rounded-3xl overflow-hidden bg-neutral-50 mb-2.5 flex items-center justify-center p-3">
-            <img src="${prod.image}" alt="${prod.title}" class="max-h-full max-w-full object-contain product-cutout">
-
-            <div class="admin-only-flex absolute top-1.5 inset-x-1.5 flex justify-between gap-1 z-20">
-              <label class="bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl cursor-pointer backdrop-blur shadow flex items-center gap-1">
-                <i data-lucide="camera" class="w-3 h-3"></i> Photo
-                <input type="file" accept="image/*" class="hidden prod-replace-input">
-              </label>
-              <button class="btn-prod-link bg-black/80 hover:bg-black text-white text-[10px] font-bold px-2 py-1 rounded-xl backdrop-blur shadow flex items-center gap-1">
-                <i data-lucide="link" class="w-3 h-3"></i> Link
-              </button>
-              <button class="btn-prod-del bg-red-600/90 hover:bg-red-700 text-white text-[10px] font-bold p-1 rounded-xl backdrop-blur shadow">
-                <i data-lucide="trash-2" class="w-3 h-3"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="px-1 mb-2.5 flex flex-col flex-1">
-            <div class="prod-item-title editable-box font-extrabold text-xs text-neutral-900 line-clamp-2 leading-tight" contenteditable="${state.isAdmin}">
-              ${prod.title}
-            </div>
-            <div class="prod-item-price editable-box text-[11px] font-bold text-neutral-500 mt-1" contenteditable="${state.isAdmin}">
-              ${prod.price || '$0.00'}
-            </div>
-          </div>
-
-          <a href="${prod.link}" target="_blank" rel="noopener noreferrer" 
-             class="w-full py-2.5 bg-neutral-900 hover:bg-black text-white rounded-2xl text-center text-xs font-extrabold shadow-sm transition block tracking-tight">
-            Shop on Amazon
-          </a>
-        `;
-
-        itemCard.querySelector('.prod-item-title').addEventListener('blur', (e) => {
-          prod.title = e.target.innerText.trim();
-        });
-
-        itemCard.querySelector('.prod-item-price').addEventListener('blur', (e) => {
-          prod.price = e.target.innerText.trim();
-        });
-
-        itemCard.querySelector('.prod-replace-input').addEventListener('change', (e) => {
-          readDeviceImage(e.target.files[0], (dataUri) => {
-            prod.image = dataUri;
-            render();
-          });
-        });
-
-        itemCard.querySelector('.btn-prod-link').addEventListener('click', () => {
-          openModal(`Edit Link for "${prod.title}"`, "Destination Affiliate URL:", prod.link, (newUrl) => {
-            prod.link = newUrl;
-            render();
-          });
-        });
-
-        itemCard.querySelector('.btn-prod-del').addEventListener('click', () => {
-          folder.products.splice(pIndex, 1);
-          render();
-        });
-
-        productGrid.appendChild(itemCard);
-      });
-
-      subpage.appendChild(productGrid);
-      outlet.appendChild(subpage);
-    }
-
-    // PIN Authentication Setup
-    function setupAdminSecurity() {
-      const pinModal = document.getElementById('pin-modal');
-      const pinInput = document.getElementById('pin-input');
-      const pinErrorMsg = document.getElementById('pin-error-msg');
-      const avatarTarget = document.getElementById('avatar-tap-target');
-
-      function openPinPrompt() {
-        pinInput.value = '';
-        pinErrorMsg.classList.add('hidden');
-        pinModal.classList.remove('hidden');
-        pinInput.focus();
-      }
-
-      function closePinPrompt() {
-        pinModal.classList.add('hidden');
-        pinInput.value = '';
-      }
-
-      document.getElementById('btn-pin-cancel').onclick = closePinPrompt;
-
-      document.getElementById('btn-pin-submit').onclick = () => {
-        const entered = pinInput.value.trim();
-        if (entered === state.adminPin) {
-          state.isAdmin = true;
-          closePinPrompt();
-          render();
-          showToast("Admin mode unlocked!");
-        } else {
-          pinErrorMsg.classList.remove('hidden');
-          pinInput.value = '';
-          pinInput.focus();
-        }
-      };
-
-      pinInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') document.getElementById('btn-pin-submit').click();
-      });
-
-      // Detection A: Secret URL parameter (?edit or ?admin)
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('edit') || urlParams.has('admin')) {
-        setTimeout(openPinPrompt, 300);
-      }
-
-      // Detection B: Secret Gesture (Triple-Tap on Avatar in under 800ms)
-      let tapCount = 0;
-      let tapTimer = null;
-      avatarTarget.addEventListener('click', () => {
-        tapCount++;
-        clearTimeout(tapTimer);
-        tapTimer = setTimeout(() => {
-          tapCount = 0;
-        }, 800);
-
-        if (tapCount >= 3) {
-          tapCount = 0;
-          openPinPrompt();
-        }
-      });
-
-      // Exit Admin Mode
-      document.getElementById('btn-lock-exit').onclick = () => {
-        state.isAdmin = false;
-        render();
-        showToast("Storefront locked.");
-      };
-
-      // Change PIN Handlers
-      const changePinModal = document.getElementById('change-pin-modal');
-      const newPinInput = document.getElementById('new-pin-input');
-
-      document.getElementById('btn-dock-pin').onclick = () => {
-        newPinInput.value = '';
-        changePinModal.classList.remove('hidden');
-        newPinInput.focus();
-      };
-      document.getElementById('btn-close-changepin').onclick = () => {
-        changePinModal.classList.add('hidden');
-      };
-      document.getElementById('btn-save-new-pin').onclick = () => {
-        const np = newPinInput.value.trim();
-        if (np.length >= 4) {
-          state.adminPin = np;
-          changePinModal.classList.add('hidden');
-          showToast("PIN updated successfully!");
-        }
-      };
-    }
-
-    // Theme Drawer Setup
-    function setupThemeDrawer() {
-      const presetsGrid = document.getElementById('preset-themes-grid');
-      presetsGrid.innerHTML = '';
-
-      PRESET_THEMES.forEach(preset => {
-        const btn = document.createElement('button');
-        btn.className = "flex items-center gap-2 p-2.5 rounded-2xl border border-neutral-200/80 hover:border-neutral-400 bg-white text-left transition group";
-        btn.innerHTML = `
-          <div class="w-6 h-6 rounded-full border border-black/10 flex-shrink-0 shadow-sm" style="background-color: ${preset.bgColor};"></div>
-          <span class="text-xs font-bold text-neutral-800 truncate">${preset.name}</span>
-        `;
-        btn.onclick = () => {
-          state.theme.presetId = preset.id;
-          state.theme.bgColor = preset.bgColor;
-          state.theme.textColor = preset.textColor;
-          state.theme.subtextColor = preset.subtextColor;
-          state.theme.isDark = preset.isDark;
-          document.getElementById('theme-color-picker').value = preset.bgColor;
-          document.getElementById('custom-hex-label').innerText = preset.bgColor;
-          render();
-        };
-        presetsGrid.appendChild(btn);
-      });
-
-      const colorPicker = document.getElementById('theme-color-picker');
-      const hexLabel = document.getElementById('custom-hex-label');
-      colorPicker.value = state.theme.bgColor;
-      hexLabel.innerText = state.theme.bgColor;
-
-      colorPicker.addEventListener('input', (e) => {
-        const hex = e.target.value;
-        hexLabel.innerText = hex;
-        state.theme.bgColor = hex;
-        state.theme.presetId = 'custom';
-        const r = parseInt(hex.slice(1,3), 16);
-        const g = parseInt(hex.slice(3,5), 16);
-        const b = parseInt(hex.slice(5,7), 16);
-        const yiq = ((r*299)+(g*587)+(b*114))/1000;
-        state.theme.isDark = (yiq < 128);
-        state.theme.textColor = state.theme.isDark ? '#f9fafb' : '#111827';
-        state.theme.subtextColor = state.theme.isDark ? '#9ca3af' : '#4b5563';
-        render();
-      });
-
-      document.getElementById('theme-bg-file').addEventListener('change', (e) => {
-        readDeviceImage(e.target.files[0], (dataUri) => {
-          state.theme.bgImage = dataUri;
-          render();
-        });
-      });
-
-      document.getElementById('btn-remove-bg-image').onclick = () => {
-        state.theme.bgImage = '';
-        render();
-      };
-
-      const overlaySlider = document.getElementById('theme-overlay-slider');
-      const overlayValText = document.getElementById('overlay-val-text');
-      overlaySlider.addEventListener('input', (e) => {
-        const val = e.target.value;
-        overlayValText.innerText = val + '%';
-        state.theme.overlayOpacity = val / 100;
-        render();
-      });
-
-      const blurSlider = document.getElementById('theme-blur-slider');
-      const blurValText = document.getElementById('blur-val-text');
-      blurSlider.addEventListener('input', (e) => {
-        const val = e.target.value;
-        blurValText.innerText = val + 'px';
-        state.theme.blur = parseInt(val);
-        render();
-      });
-
-      document.getElementById('btn-dock-theme').onclick = () => {
-        document.getElementById('theme-modal').classList.remove('hidden');
-      };
-      document.getElementById('theme-modal-close').onclick = () => {
-        document.getElementById('theme-modal').classList.add('hidden');
-      };
-      document.getElementById('theme-modal-apply').onclick = () => {
-        document.getElementById('theme-modal').classList.add('hidden');
-      };
-    }
-
-    // Generate Production HTML Payload
-    function generateCleanHtml() {
-      state.profile.name = document.getElementById('profile-name').innerText.trim() || state.profile.name;
-      state.profile.handle = document.getElementById('profile-handle').innerText.trim() || state.profile.handle;
-
-      const docClone = document.documentElement.cloneNode(true);
-      docClone.classList.remove('is-admin');
-
-      // Set default initial state to locked visitor mode in the export
-      const scripts = docClone.querySelectorAll('script');
-      scripts.forEach(s => {
-        if (s.textContent.includes('let state = {')) {
-          const stateExport = JSON.parse(JSON.stringify(state));
-          stateExport.isAdmin = false;
-          s.textContent = s.textContent.replace(
-            /let state = [\s\S]*?;\n\n    \/\/ Toast Utility/,
-            `let state = ${JSON.stringify(stateExport, null, 2)};\n\n    // Toast Utility`
-          );
-        }
-      });
-
-      return "<!DOCTYPE html>\n" + docClone.outerHTML;
-    }
-
-    // GitHub API 1-Click Sync
-    function setupGitHubPublishing() {
-      const ghModal = document.getElementById('github-modal');
-      const ownerInput = document.getElementById('gh-owner');
-      const repoInput = document.getElementById('gh-repo');
-      const branchInput = document.getElementById('gh-branch');
-      const pathInput = document.getElementById('gh-path');
-      const tokenInput = document.getElementById('gh-token');
-
-      // Load saved settings from local storage
-      const savedConfig = JSON.parse(localStorage.getItem('gh_sync_config') || '{}');
-      if (savedConfig.owner) ownerInput.value = savedConfig.owner;
-      if (savedConfig.repo) repoInput.value = savedConfig.repo;
-      if (savedConfig.branch) branchInput.value = savedConfig.branch;
-      if (savedConfig.path) pathInput.value = savedConfig.path;
-      if (savedConfig.token) tokenInput.value = savedConfig.token;
-
-      document.getElementById('btn-dock-sync').onclick = () => {
-        ghModal.classList.remove('hidden');
-      };
-      document.getElementById('btn-close-gh-modal').onclick = () => {
-        ghModal.classList.add('hidden');
-      };
-
-      document.getElementById('btn-save-gh-settings').onclick = () => {
-        const config = {
-          owner: ownerInput.value.trim(),
-          repo: repoInput.value.trim(),
-          branch: branchInput.value.trim() || 'main',
-          path: pathInput.value.trim() || 'index.html',
-          token: tokenInput.value.trim()
-        };
-        localStorage.setItem('gh_sync_config', JSON.stringify(config));
-        ghModal.classList.add('hidden');
-        showToast("GitHub sync settings saved!");
-      };
-
-      // Direct 1-Click Publish to GitHub API
-      const publishBtn = document.getElementById('btn-dock-publish');
-      const publishLabel = document.getElementById('btn-publish-label');
-
-      publishBtn.onclick = async () => {
-        const cfg = JSON.parse(localStorage.getItem('gh_sync_config') || '{}');
-
-        if (!cfg.owner || !cfg.repo || !cfg.token) {
-          ghModal.classList.remove('hidden');
-          showToast("Please enter your GitHub details first", true);
-          return;
-        }
-
-        try {
-          publishBtn.disabled = true;
-          publishLabel.innerText = "Publishing...";
-          publishBtn.classList.add('opacity-75');
-
-          const cleanHtml = generateCleanHtml();
-          
-          // UTF-8 to Base64 encode
-          const utf8Bytes = new TextEncoder().encode(cleanHtml);
-          let binaryStr = '';
-          for (let i = 0; i < utf8Bytes.length; i++) {
-            binaryStr += String.fromCharCode(utf8Bytes[i]);
-          }
-          const base64Content = btoa(binaryStr);
-
-          // 1. Fetch existing file SHA (if it exists)
-          const fileUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}`;
-          const getRes = await fetch(fileUrl, {
-            headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-
-          let sha = null;
-          if (getRes.status === 200) {
-            const fileData = await getRes.json();
-            sha = fileData.sha;
-          }
-
-          // 2. Commit and push updated HTML
-          const putPayload = {
-            message: `Update bio storefront via mobile admin [${new Date().toLocaleTimeString()}]`,
-            content: base64Content,
-            branch: cfg.branch
-          };
-          if (sha) putPayload.sha = sha;
-
-          const putRes = await fetch(fileUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(putPayload)
-          });
-
-          if (!putRes.ok) {
-            const errJson = await putRes.json();
-            throw new Error(errJson.message || 'Failed to push commit');
-          }
-
-          showToast("🚀 Published to GitHub! Site will update in ~60s.");
-        } catch (err) {
-          console.error(err);
-          showToast(`Publish error: ${err.message}`, true);
-        } finally {
-          publishBtn.disabled = false;
-          publishLabel.innerText = "Publish Live";
-          publishBtn.classList.remove('opacity-75');
-        }
-      };
-    }
-
-    // General Event Handlers
-    function initEventListeners() {
-      document.getElementById('tab-links-btn').onclick = () => {
-        state.activeTab = 'links';
-        state.currentFolderId = null;
-        render();
-      };
-
-      document.getElementById('tab-shop-btn').onclick = () => {
-        state.activeTab = 'shop';
-        render();
-      };
-
-      document.getElementById('profile-avatar-input').addEventListener('change', (e) => {
-        readDeviceImage(e.target.files[0], (base64) => {
-          state.profile.avatar = base64;
-          render();
-        });
-      });
-
-      document.getElementById('profile-name').addEventListener('blur', (e) => {
-        state.profile.name = e.target.innerText.trim() || "Isabelle";
-      });
-      document.getElementById('profile-handle').addEventListener('blur', (e) => {
-        state.profile.handle = e.target.innerText.trim() || "@isabelle";
-      });
-
-      // Dock: Add Folder
-      document.getElementById('btn-dock-folder').onclick = () => {
-        const newId = 'folder-' + Date.now();
-        state.folders.unshift({
-          id: newId,
-          title: "New Curated Collection",
-          products: [
+          id: "folder-1",
+          title: "Fashion Picks",
+          items: [
             {
-              id: 'prod-' + Date.now(),
-              title: "Favorite Item",
-              price: "$32.00",
-              image: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=400&q=80",
-              link: "https://amazon.com"
+              id: "item-1-0",
+              title: "T-Shirt",
+              price: "$24.99",
+              url: "https://amazon.com",
+              photo: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+              id: "item-1-1",
+              title: "Straight Fit Jeans",
+              price: "$48.00",
+              url: "https://amazon.com",
+              photo: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+              id: "item-1-2",
+              title: "Retro Sneakers",
+              price: "$75.00",
+              url: "https://amazon.com",
+              photo: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+              id: "item-1-3",
+              title: "Silver Classic Watch",
+              price: "$59.00",
+              url: "https://amazon.com",
+              photo: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=400&q=80"
             }
           ]
-        });
-        state.activeTab = 'shop';
-        state.currentFolderId = newId;
-        render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      };
-
-      // Dock: Add Product
-      document.getElementById('btn-dock-product').onclick = () => {
-        state.activeTab = 'shop';
-        if (!state.currentFolderId) {
-          if (state.folders.length === 0) {
-            const newFid = 'folder-' + Date.now();
-            state.folders.push({
-              id: newFid,
-              title: "My Collection",
-              products: []
-            });
-            state.currentFolderId = newFid;
-          } else {
-            state.currentFolderId = state.folders[0].id;
-          }
         }
+      ],
+      links: [
+        { title: "Follow on Instagram", url: "https://instagram.com" },
+        { title: "YouTube Channel", url: "https://youtube.com" }
+      ]
+    };
 
-        const currentFolder = state.folders.find(f => f.id === state.currentFolderId);
-        if (currentFolder) {
-          currentFolder.products.push({
-            id: 'prod-' + Date.now(),
-            title: "New Pick",
-            price: "$29.00",
-            image: "https://placehold.co/400x400/ffffff/111827?text=Upload+Photo",
-            link: "https://amazon.com"
-          });
-          render();
-        }
-      };
+    let appData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData;
+    let isAdmin = false;
+    let currentActiveFolderId = null;
+    let fileUploadCallback = null;
 
-      // Fallback: Download HTML File
-      document.getElementById('btn-dock-download').onclick = () => {
-        const completeHtml = generateCleanHtml();
-        const blob = new Blob([completeHtml], { type: 'text/html;charset=utf-8' });
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.href = URL.createObjectURL(blob);
-        downloadAnchor.download = 'index.html';
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        document.body.removeChild(downloadAnchor);
-        URL.revokeObjectURL(downloadAnchor.href);
-        showToast("Downloaded index.html");
-      };
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.innerText = text;
+      toast.classList.remove('-translate-y-16', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('-translate-y-16', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2000);
     }
 
-    // App Startup
-    window.addEventListener('DOMContentLoaded', () => {
-      setupAdminSecurity();
-      setupThemeDrawer();
-      setupGitHubPublishing();
-      initEventListeners();
-      render();
-    });
-  </script>
+    function copyDeepLink(hash) {
+      const url = `${window.location.origin}${window.location.pathname}${hash}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Direct Link Copied!');
+      }).catch(() => {
+        prompt('Copy this link:', url);
+      });
+    }
 
-</body></html>
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function applyTheme() {
+      document.documentElement.style.setProperty('--bg-color', appData.theme.bgColor);
+      document.documentElement.style.setProperty('--pill-bg', appData.theme.pillColor);
+      const bgLayer = document.getElementById('custom-bg-layer');
+      if (appData.theme.wallpaper) {
+        bgLayer.style.backgroundImage = `url(${appData.theme.wallpaper})`;
+        bgLayer.classList.remove('opacity-0');
+        bgLayer.classList.add('opacity-100');
+      } else {
+        bgLayer.style.backgroundImage = 'none';
+        bgLayer.classList.add('opacity-0');
+      }
+    }
+
+    function render() {
+      applyTheme();
+      document.getElementById('avatar-img').src = appData.profile.avatar;
+      document.getElementById('profile-name').innerText = appData.profile.name;
+      document.getElementById('profile-handle').innerText = appData.profile.handle;
+      document.getElementById('profile-bio').innerText = appData.profile.bio;
+      document.getElementById('affiliate-disclosure').innerText = appData.profile.disclosure;
+
+      document.querySelectorAll('.editable-elem').forEach(el => {
+        el.contentEditable = isAdmin ? "true" : "false";
+        el.classList.toggle('editable-focus', isAdmin);
+      });
+
+      document.getElementById('btn-change-avatar').classList.toggle('hidden', !isAdmin);
+      document.getElementById('admin-bar').classList.toggle('hidden', !isAdmin);
+      document.getElementById('btn-add-product').classList.toggle('hidden', !isAdmin);
+      document.getElementById('btn-add-link').classList.toggle('hidden', !isAdmin);
+
+      renderFolders();
+      renderLinks();
+
+      if (currentActiveFolderId) {
+        renderFolderDetail(currentActiveFolderId);
+      }
+    }
+
+    function renderFolders() {
+      const container = document.getElementById('folders-container');
+      container.innerHTML = '';
+
+      appData.folders.forEach(folder => {
+        const card = document.createElement('div');
+        card.id = folder.id;
+        card.className = "w-full bg-white rounded-5xl p-5 card-shadow transition-transform active:scale-[0.99] relative cursor-pointer";
+
+        const previewItems = folder.items.slice(0, 4);
+        let previewsHtml = previewItems.length > 0 ? `
+          <div class="grid grid-cols-${Math.min(previewItems.length, 4)} gap-2 py-4 px-2 items-center justify-items-center">
+            ${previewItems.map(item => `
+              <div class="w-16 h-20 sm:w-20 sm:h-24 rounded-2xl bg-neutral-50 flex items-center justify-center overflow-hidden p-1">
+                <img src="${item.photo}" class="w-full h-full object-contain mix-blend-multiply" alt="${item.title}">
+              </div>
+            `).join('')}
+          </div>
+        ` : `<div class="py-8 text-center text-xs text-neutral-400 font-semibold">Empty Collection</div>`;
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-neutral-400">⠿</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="event.stopPropagation(); copyDeepLink('#${folder.id}')" 
+                      class="px-2.5 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200 text-[11px] font-semibold text-neutral-700 flex items-center gap-1" 
+                      title="Copy link to this folder">
+                🔗 <span class="hidden sm:inline">Copy Link</span>
+              </button>
+              ${isAdmin ? `<button onclick="event.stopPropagation(); deleteFolder('${folder.id}')" class="p-1 text-red-500 hover:text-red-700 text-xs">🗑️</button>` : ''}
+              <button class="w-7 h-7 rounded-full bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-600">›</button>
+            </div>
+          </div>
+          ${previewsHtml}
+          <div class="text-center mt-1">
+            <h3 class="text-sm font-extrabold text-neutral-900">${folder.title}</h3>
+            <p class="text-[11px] font-bold text-neutral-400">${folder.items.length} Products</p>
+          </div>
+        `;
+
+        card.addEventListener('click', () => openFolderView(folder.id));
+        container.appendChild(card);
+      });
+    }
+
+    function renderFolderDetail(folderId) {
+      const folder = appData.folders.find(f => f.id === folderId);
+      if (!folder) return;
+
+      document.getElementById('detail-folder-title').innerText = folder.title;
+      document.getElementById('detail-folder-count').innerText = `${folder.items.length} Products`;
+      document.getElementById('btn-copy-current-folder').onclick = () => copyDeepLink(`#${folder.id}`);
+
+      const grid = document.getElementById('folder-products-grid');
+      grid.innerHTML = '';
+
+      folder.items.forEach((item, index) => {
+        const itemCard = document.createElement('div');
+        itemCard.id = item.id;
+        itemCard.className = "bg-white rounded-3xl p-3 card-shadow flex flex-col justify-between relative transition duration-300";
+
+        itemCard.innerHTML = `
+          ${is
