@@ -707,14 +707,38 @@
       }
     });
 
-    function readDeviceImage(file, callback) {
+    // Image Compressor & Reader (Scales oversized mobile camera roll photos)
+    function readDeviceImage(file, callback, maxDim = 1200, quality = 0.82) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => callback(e.target.result);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => callback(e.target.result);
+        img.src = e.target.result;
+      };
       reader.readAsDataURL(file);
     }
 
-    // Universal Mobile File Picker Helper (Bypasses label/touch issues)
+    // Universal Mobile File Picker Helper
     function pickDeviceImage(callback) {
       let fileInput = document.getElementById('app-universal-file-picker');
       if (!fileInput) {
@@ -950,7 +974,6 @@
         showcase.className = "w-full h-36 flex items-center justify-center gap-3 py-2 px-2 overflow-hidden mb-2 pointer-events-none rounded-3xl relative";
 
         if (folder.coverImage) {
-          // Folder has a custom cover photo uploaded
           showcase.innerHTML = `
             <div class="w-full h-full rounded-3xl overflow-hidden flex items-center justify-center relative pointer-events-auto">
               <img src="${folder.coverImage}" alt="${folder.title}" class="w-full h-full object-cover">
@@ -973,7 +996,6 @@
             }
           }
         } else {
-          // Fallback to dress preview cutouts
           const previewSlice = collectPreviewPhotos(folder);
           if (previewSlice.length === 0) {
             showcase.innerHTML = `
@@ -1050,7 +1072,6 @@
           folder.title = e.target.innerText.trim() || "Untitled Folder";
         });
 
-        // Folder Thumbnail Photo Upload Trigger
         const thumbBtn = footer.querySelector('.btn-upload-folder-thumb');
         if (thumbBtn) {
           thumbBtn.onclick = (e) => {
@@ -1181,7 +1202,6 @@
         folder.title = e.target.innerText.trim() || "Untitled Folder";
       });
 
-      // Cover Action: Change / Delete in Subpage
       const changeCoverBtn = headerCard.querySelector('#btn-subpage-change-cover');
       if (changeCoverBtn) {
         changeCoverBtn.onclick = () => {
@@ -1201,7 +1221,6 @@
         };
       }
 
-      // Action: Upload Folder Thumbnail from Subpage Header
       headerControlsRow.querySelector('#btn-subpage-upload-cover').onclick = () => {
         pickDeviceImage((dataUri) => {
           folder.coverImage = dataUri;
@@ -1210,7 +1229,6 @@
         });
       };
 
-      // Action: Create Subfolder (Uses custom modal - Never blocked by mobile Chrome)
       headerControlsRow.querySelector('#btn-add-subfolder-inner').onclick = () => {
         openModal("Create New Subfolder", "Subfolder Name:", "Sub Collection", (subName) => {
           if (!subName || !subName.trim()) return;
@@ -1229,7 +1247,6 @@
         });
       };
 
-      // Action: Add Dress with Affiliate Link Button
       headerControlsRow.querySelector('#btn-add-dress-inner').onclick = () => {
         const newProd = {
           id: 'prod-' + Date.now(),
@@ -1250,7 +1267,7 @@
       subpage.appendChild(navHeader);
       subpage.appendChild(headerCard);
 
-      // Subfolders Section (Nested collections)
+      // Subfolders Section
       if (folder.subfolders && folder.subfolders.length > 0) {
         const subSection = document.createElement('div');
         subSection.className = "flex flex-col gap-3 w-full pt-1";
@@ -1677,7 +1694,6 @@
       const docClone = document.documentElement.cloneNode(true);
       docClone.classList.remove('is-admin');
 
-      // 1. Ensure the Publish button in the export is NEVER saved as "Publishing..." or disabled
       const clonePublishBtn = docClone.querySelector('#btn-dock-publish');
       const clonePublishLabel = docClone.querySelector('#btn-publish-label');
       if (clonePublishBtn) {
@@ -1688,13 +1704,11 @@
         clonePublishLabel.innerText = "Publish Live";
       }
 
-      // 2. Ensure dock is hidden by default in exported clean HTML
       const cloneAdminDock = docClone.querySelector('#admin-dock');
       if (cloneAdminDock) {
         cloneAdminDock.classList.add('hidden');
       }
 
-      // 3. Ensure modals and toast are hidden
       const modals = docClone.querySelectorAll('#pin-modal, #github-modal, #change-pin-modal, #general-modal, #theme-modal');
       modals.forEach(m => m.classList.add('hidden'));
 
@@ -1703,7 +1717,6 @@
         toast.className = "fixed top-5 z-50 transform -translate-y-20 opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-[90%] mx-auto";
       }
 
-      // 4. Serialize clean master state
       const scripts = docClone.querySelectorAll('script');
       scripts.forEach(s => {
         if (s.textContent.includes('let state = {')) {
@@ -1745,11 +1758,11 @@
 
       document.getElementById('btn-save-gh-settings').onclick = () => {
         const config = {
-          owner: ownerInput.value.trim(),
-          repo: repoInput.value.trim(),
-          branch: branchInput.value.trim() || 'main',
-          path: pathInput.value.trim() || 'index.html',
-          token: tokenInput.value.trim()
+          owner: (ownerInput.value || '').trim(),
+          repo: (repoInput.value || '').trim(),
+          branch: (branchInput.value || 'main').trim(),
+          path: (pathInput.value || 'index.html').trim(),
+          token: (tokenInput.value || '').trim()
         };
         localStorage.setItem('gh_sync_config', JSON.stringify(config));
         ghModal.classList.add('hidden');
@@ -1765,8 +1778,13 @@
 
       publishBtn.onclick = async () => {
         const cfg = JSON.parse(localStorage.getItem('gh_sync_config') || '{}');
+        const owner = (cfg.owner || '').trim();
+        const repo = (cfg.repo || '').trim();
+        const branch = (cfg.branch || 'main').trim();
+        const path = (cfg.path || 'index.html').trim();
+        const token = (cfg.token || '').trim();
 
-        if (!cfg.owner || !cfg.repo || !cfg.token) {
+        if (!owner || !repo || !token) {
           ghModal.classList.remove('hidden');
           showToast("Please enter your GitHub details first", true);
           return;
@@ -1786,14 +1804,12 @@
           }
           const base64Content = btoa(binaryStr);
 
-          // Fetch existing file SHA with cache-busting
-          const fileUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}?ref=${cfg.branch}&_ts=${Date.now()}`;
+          // 1. Fetch existing file SHA (Standard CORS headers only)
+          const fileUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}&_ts=${Date.now()}`;
           const getRes = await fetch(fileUrl, {
             headers: {
-              'Authorization': `Bearer ${cfg.token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3+json'
             }
           });
 
@@ -1801,19 +1817,24 @@
           if (getRes.status === 200) {
             const fileData = await getRes.json();
             sha = fileData.sha;
+          } else if (getRes.status === 401) {
+            throw new Error("Invalid GitHub Token (401). Check permissions.");
+          } else if (getRes.status === 404) {
+            // File doesn't exist yet or new repo, sha remains null
           }
 
+          // 2. Commit and push updated HTML
           const putPayload = {
             message: `Update bio storefront via mobile admin [${new Date().toLocaleTimeString()}]`,
             content: base64Content,
-            branch: cfg.branch
+            branch: branch
           };
           if (sha) putPayload.sha = sha;
 
-          const putRes = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`, {
+          const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${cfg.token}`,
+              'Authorization': `token ${token}`,
               'Accept': 'application/vnd.github.v3+json',
               'Content-Type': 'application/json'
             },
@@ -1822,7 +1843,7 @@
 
           if (!putRes.ok) {
             const errJson = await putRes.json();
-            throw new Error(errJson.message || 'Failed to push commit');
+            throw new Error(errJson.message || `Failed to push (${putRes.status})`);
           }
 
           showToast("🚀 Published to GitHub! Site will update in ~60s.");
@@ -1870,7 +1891,7 @@
         state.profile.handle = e.target.innerText.trim() || "@isabelle";
       });
 
-      // Dock: Add Folder (Context-aware: Adds Subfolder if currently inside a folder, else creates a collection)
+      // Dock: Add Folder
       document.getElementById('btn-dock-folder').onclick = () => {
         state.activeTab = 'shop';
         if (state.currentFolderId) {
@@ -1897,7 +1918,6 @@
           }
         }
 
-        // At top-level collections
         openModal("Create New Collection", "Collection Name:", "New Curated Collection", (folderName) => {
           if (!folderName || !folderName.trim()) return;
           const newId = 'folder-' + Date.now();
